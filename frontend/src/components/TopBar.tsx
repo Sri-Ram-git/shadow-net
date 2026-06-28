@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 const pageLabels: Record<string, string> = {
   '/dashboard': 'Command Center',
@@ -15,7 +16,7 @@ const pageLabels: Record<string, string> = {
 export function TopBar() {
   const location = useLocation();
   const [time, setTime] = useState(new Date());
-  const [online] = useState(navigator.onLine);
+  const online = useOnlineStatus();
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Text, Boolean, DateTime, Enum
+from sqlalchemy import Column, String, Text, Boolean, DateTime, Enum, Float
 from sqlalchemy.orm import Mapped
 from app.core.database import Base
 import enum
@@ -37,7 +37,15 @@ class Incident(Base):
     title: Mapped[str] = Column(String(200), nullable=False)
     description: Mapped[str] = Column(Text, nullable=False)
     location: Mapped[str] = Column(String(300), nullable=False)
-    category: Mapped[str] = Column(String(20), nullable=False, default=IncidentCategory.OTHER.value)
+    category: Mapped[str] = Column(String(200), nullable=False, default=IncidentCategory.OTHER.value)
+    latitude: Mapped[float | None] = Column(Float, nullable=True)
+    longitude: Mapped[float | None] = Column(Float, nullable=True)
+    city: Mapped[str | None] = Column(String(100), nullable=True)
+    state: Mapped[str | None] = Column(String(100), nullable=True)
+    country: Mapped[str | None] = Column(String(100), nullable=True)
+    postal_code: Mapped[str | None] = Column(String(20), nullable=True)
+    place_id: Mapped[str | None] = Column(String(200), nullable=True)
+    landmark: Mapped[str | None] = Column(String(200), nullable=True)
     severity: Mapped[str] = Column(String(2), nullable=False, default=Severity.P4.value)
     status: Mapped[str] = Column(String(20), nullable=False, default=IncidentStatus.OPEN.value)
     image_url: Mapped[str | None] = Column(String(500), nullable=True)

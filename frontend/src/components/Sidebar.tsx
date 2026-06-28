@@ -48,17 +48,18 @@ export function Sidebar() {
             </p>
             <div className="space-y-0.5">
               {section.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex items-center px-2 py-1.5 text-sm transition-colors duration-150 ${
-                      isActive
-                        ? 'text-ink bg-surface-200'
-                        : 'text-ink-400 hover:text-ink hover:bg-surface-100'
-                    }`
-                  }
-                >
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === '/incidents'}
+                    className={({ isActive }) =>
+                      `flex items-center px-2 py-1.5 text-sm transition-colors duration-150 ${
+                        isActive
+                          ? 'text-ink bg-surface-200'
+                          : 'text-ink-400 hover:text-ink hover:bg-surface-100'
+                      }`
+                    }
+                  >
                   {item.label}
                 </NavLink>
               ))}

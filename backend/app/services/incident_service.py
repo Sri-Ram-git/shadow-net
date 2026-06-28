@@ -12,11 +12,20 @@ class IncidentService(BaseService):
         payload: IncidentCreate,
         image_url: str | None = None,
     ) -> Incident:
+        categories_str = ",".join(payload.categories)
         incident = Incident(
             title=payload.title,
             description=payload.description,
             location=payload.location,
-            category=payload.category.value,
+            category=categories_str,
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            city=payload.city,
+            state=payload.state,
+            country=payload.country,
+            postal_code=payload.postal_code,
+            place_id=payload.place_id,
+            landmark=payload.landmark,
             image_url=image_url,
         )
         incident = await self.incident_repo.create(incident)

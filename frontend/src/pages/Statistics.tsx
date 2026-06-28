@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 import {
   Chart as ChartJS,
@@ -26,6 +27,7 @@ const chartOpts = {
 };
 
 export function Statistics() {
+  useDocumentTitle('Analytics');
   const [stats, setStats] = useState<{
     incidents_by_severity: Record<string, number>;
     incidents_by_category: Record<string, number>;
@@ -77,8 +79,15 @@ export function Statistics() {
       </div>
 
       {loading ? (
-        <div className="empty-state py-16">
-          <pre className="empty-state-icon">{'[ loading... ]'}</pre>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
+          <div className="bg-surface-100 p-6 space-y-4">
+            <div className="skeleton h-4 w-28" />
+            <div className="skeleton h-64 w-full" />
+          </div>
+          <div className="bg-surface-100 p-6 space-y-4">
+            <div className="skeleton h-4 w-24" />
+            <div className="skeleton h-64 w-full rounded-full" />
+          </div>
         </div>
       ) : !stats || stats.total_incidents === 0 ? (
         <div className="empty-state py-16">

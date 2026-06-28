@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { wsService } from '../services/websocket';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import type { Incident } from '../types';
-import { Search, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { SearchInput } from '../components/SearchInput';
 
 const severityMap: Record<string, { label: string; cls: string }> = {
   P1: { label: 'CRIT', cls: 'tag-critical' },
@@ -20,6 +22,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export function LiveIncidents() {
+  useDocumentTitle('Incidents');
   const navigate = useNavigate();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,14 +63,11 @@ export function LiveIncidents() {
 
       {/* Search */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-500" />
-          <input
-            type="text"
-            placeholder="Search incidents…"
+        <div className="flex-1 max-w-xs">
+          <SearchInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input pl-9"
+            onChange={setSearch}
+            placeholder="Search incidents…"
           />
         </div>
       </div>
@@ -87,9 +87,13 @@ export function LiveIncidents() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="text-center py-12 text-ink-500 text-sm">Loading…</td>
-              </tr>
+              <>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} className="px-4 py-4"><div className="skeleton h-5 w-full" /></td>
+                  </tr>
+                ))}
+              </>
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center py-12">

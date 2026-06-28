@@ -11,7 +11,7 @@ from app.repositories import (
     AuditRepository,
 )
 from app.services.incident_service import IncidentService
-from app.schemas.incident import IncidentResponse, IncidentCreate, IncidentCategory
+from app.schemas.incident import IncidentResponse, IncidentCreate
 from app.core.config import settings
 
 router = APIRouter()
@@ -48,12 +48,22 @@ async def create_incident(
     title: str = Form(...),
     description: str = Form(...),
     location: str = Form(...),
-    category: str = Form("other"),
+    categories: str = Form("other"),
+    latitude: Optional[float] = Form(None),
+    longitude: Optional[float] = Form(None),
+    city: Optional[str] = Form(None),
+    state: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    postal_code: Optional[str] = Form(None),
+    place_id: Optional[str] = Form(None),
+    landmark: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     service: IncidentService = Depends(get_incident_service),
 ):
-    if category not in [c.value for c in IncidentCategory]:
-        category = "other"
+    valid_categories = ["fire", "medical", "flood", "earthquake", "infrastructure", "hazard", "other"]
+    cats = [c.strip() for c in categories.split(",") if c.strip() in valid_categories]
+    if not cats:
+        cats = ["other"]
 
     image_url = None
     if image and image.filename:
@@ -68,7 +78,20 @@ async def create_incident(
         image_url = f"/uploads/{filename}"
 
     incident = await service.create_incident(
-        IncidentCreate(title=title, description=description, location=location, category=IncidentCategory(category)),
+        IncidentCreate(
+            title=title,
+            description=description,
+            location=location,
+            categories=cats,
+            latitude=latitude,
+            longitude=longitude,
+            city=city,
+            state=state,
+            country=country,
+            postal_code=postal_code,
+            place_id=place_id,
+            landmark=landmark,
+        ),
         image_url=image_url,
     )
     return IncidentResponse.model_validate(incident)

@@ -3,7 +3,15 @@ export interface Incident {
   title: string;
   description: string;
   location: string;
-  category: IncidentCategory;
+  category: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  place_id?: string;
+  landmark?: string;
   severity: Severity;
   status: IncidentStatus;
   image_url?: string;
@@ -26,6 +34,53 @@ export interface AITriage {
   summary: string;
   raw_response: string;
   created_at: string;
+}
+
+export interface HazardCard {
+  hazard: string;
+  status: 'High' | 'Medium' | 'Low';
+  reason: string;
+}
+
+export interface OperationalRecommendation {
+  priority: number;
+  action: string;
+  reason: string;
+}
+
+export interface ResourceItem {
+  resource: string;
+  estimated: number;
+  reason: string;
+}
+
+export interface ReasoningNode {
+  detected: string;
+  inference: string;
+  reason: string;
+}
+
+export interface EscalationForecast {
+  next_15_minutes: string[];
+  next_hour: string[];
+  next_6_hours: string[];
+}
+
+export interface TriageAnalysis {
+  incident_type: string;
+  priority: string;
+  estimated_severity: Severity;
+  confidence: number;
+  source: string;
+  executive_summary: string;
+  confirmed_facts: string[];
+  professional_assessment: string[];
+  hazard_analysis: HazardCard[];
+  risk_analysis: RiskItem[];
+  operational_recommendations: OperationalRecommendation[];
+  resource_estimation: ResourceItem[];
+  escalation_forecast: EscalationForecast;
+  reasoning_tree: ReasoningNode[];
 }
 
 export interface ClusterNode {
@@ -80,7 +135,7 @@ export interface DashboardStats {
 }
 
 export interface WebSocketMessage {
-  type: 'incident_update' | 'cluster_update' | 'sync_update' | 'triage_update' | 'notification';
+  type: 'incident_update' | 'cluster_update' | 'sync_update' | 'triage_update' | 'settings_changed' | 'notification';
   data: unknown;
   timestamp: string;
 }
@@ -89,6 +144,22 @@ export interface CreateIncidentPayload {
   title: string;
   description: string;
   location: string;
-  category: IncidentCategory;
+  categories: string[];
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  place_id?: string;
+  landmark?: string;
   image?: File;
 }
+
+export interface RiskItem {
+  risk: string;
+  percentage: number;
+  reason: string;
+}
+
+

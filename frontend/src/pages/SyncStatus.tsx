@@ -1,14 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
 import { wsService } from '../services/websocket';
+import { MetricCell } from '../components/MetricCell';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import type { SyncQueueItem } from '../types';
 import toast from 'react-hot-toast';
 
 export function SyncStatus() {
+  useDocumentTitle('Sync');
   const [queue, setQueue] = useState<SyncQueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
-  const [online] = useState(navigator.onLine);
+  const online = useOnlineStatus();
 
   const fetch = useCallback(async () => {
     try { setQueue(await apiService.getSyncQueue()); }
@@ -89,7 +93,11 @@ export function SyncStatus() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-12 text-ink-500 text-sm">Loading…</td></tr>
+              Array.from({ length: 4 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={6} className="px-4 py-4"><div className="skeleton h-5 w-full" /></td>
+                </tr>
+              ))
             ) : queue.length === 0 ? (
               <tr><td colSpan={6} className="text-center py-12">
                 <pre className="text-ink-500 font-mono text-xs mb-2">{'{ }'}</pre>
@@ -124,11 +132,4 @@ export function SyncStatus() {
   );
 }
 
-function MetricCell({ value, label, valueClass }: { value: string | number; label: string; valueClass?: string }) {
-  return (
-    <div className="metric-cell">
-      <span className={`metric-value ${valueClass || ''}`}>{value}</span>
-      <span className="metric-label">{label}</span>
-    </div>
-  );
-}
+

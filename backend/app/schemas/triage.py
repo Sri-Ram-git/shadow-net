@@ -3,10 +3,6 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 
-class TriageRequest(BaseModel):
-    incident_id: str = Field(..., description="Incident ID to triage")
-
-
 class TriageResponse(BaseModel):
     id: str
     incident_id: str

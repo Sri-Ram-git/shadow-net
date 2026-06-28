@@ -17,30 +17,6 @@
   body { @apply bg-surface text-ink font-sans; }
 }
 
-/* ── ASCII / halftone texture helpers ─────────────── */
-
-.texture-dots {
-  background-image: radial-gradient(circle, #2a2a2a 0.5px, transparent 0.5px);
-  background-size: 12px 12px;
-}
-
-.texture-noise {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-}
-
-.texture-grid {
-  background-image:
-    linear-gradient(rgba(42,42,42,0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(42,42,42,0.3) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-.ascii-divider::before {
-  content: '────────────────────────────────────────────────';
-  display: block;
-  @apply text-ink-400 text-[10px] font-mono tracking-[0.2em] opacity-30;
-}
-
 /* ── Layout primitives ─────────────────────────────── */
 
 .page {
@@ -85,14 +61,6 @@
   @apply text-xs font-semibold text-ink uppercase tracking-[0.1em];
 }
 
-.panel-stat {
-  @apply text-[1.625rem] font-light text-ink tracking-[-0.01em];
-}
-
-.panel-stat-label {
-  @apply text-[11px] text-ink-400 font-mono uppercase tracking-[0.06em] mt-0.5;
-}
-
 /* ── Metric grid ───────────────────────────────────── */
 
 .metrics-grid {
@@ -111,10 +79,6 @@
   @apply text-[11px] text-ink-400 font-mono uppercase tracking-[0.06em];
 }
 
-.metric-delta {
-  @apply text-[11px] font-mono;
-}
-
 /* ── Buttons ───────────────────────────────────────── */
 
 .btn {
@@ -130,14 +94,6 @@
   @apply btn text-ink-200 border-border hover:text-ink hover:border-ink-500;
 }
 
-.btn-ghost {
-  @apply btn text-ink-400 border-transparent hover:text-ink hover:bg-surface-200;
-}
-
-.btn-critical {
-  @apply btn bg-critical text-white border-critical hover:opacity-90;
-}
-
 .btn-sm {
   @apply px-3 py-1.5 text-xs;
 }
@@ -145,21 +101,36 @@
 /* ── Inputs ────────────────────────────────────────── */
 
 .input {
-  @apply w-full bg-surface-100 border border-border px-3.5 py-2.5 text-sm text-ink
-         placeholder:text-ink-500 focus:outline-none focus:border-ink-400
-         transition-colors duration-150 rounded-none;
+  @apply w-full h-10 bg-surface border border-border text-sm text-ink
+         placeholder:text-ink-400 focus:outline-none focus:border-ink-300 focus:bg-surface-200
+         transition-all duration-150 px-3.5 rounded-none;
 }
 
-.input-mono {
-  @apply input font-mono text-[13px];
+.input:disabled {
+  @apply opacity-40 cursor-not-allowed;
 }
 
 .select {
-  @apply input appearance-none cursor-pointer;
+  @apply input appearance-none cursor-pointer pr-9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666666' stroke-width='1.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
 }
 
 .textarea {
-  @apply input min-h-[100px] resize-y;
+  @apply input min-h-[100px] resize-y h-auto py-2.5;
+}
+
+.input-label {
+  @apply block text-[11px] font-mono text-ink-400 uppercase tracking-[0.08em] mb-1.5;
+}
+
+.input-helper {
+  @apply text-[11px] font-mono text-ink-500 mt-1;
+}
+
+.input-error {
+  @apply text-[11px] font-mono text-critical mt-1;
 }
 
 /* ── Tags / badges ─────────────────────────────────── */
@@ -172,12 +143,6 @@
 .tag-high { @apply tag text-warning bg-warning-bg border border-warning/30; }
 .tag-medium { @apply tag text-ink-400 bg-surface-200 border border-border; }
 .tag-low { @apply tag text-safe bg-safe-bg border border-safe/30; }
-.tag-safe { @apply tag text-safe bg-safe-bg border border-safe/30; }
-
-.tag-severity {
-  @apply tag text-[10px] tracking-[0.12em];
-}
-
 /* ── Status indicators ─────────────────────────────── */
 
 .status-dot {
@@ -230,6 +195,24 @@
   @apply flex-1 h-px bg-border;
 }
 
+/* ── Skeleton loaders ──────────────────────────────── */
+
+.skeleton {
+  @apply bg-surface-300 animate-pulse rounded-none;
+}
+
+.skeleton-text {
+  @apply skeleton h-3 w-full;
+}
+
+.skeleton-metric {
+  @apply skeleton h-10 w-20;
+}
+
+.skeleton-cell {
+  @apply skeleton h-12 w-full;
+}
+
 /* ── Empty states ──────────────────────────────────── */
 
 .empty-state {
@@ -254,16 +237,8 @@
   @apply bg-surface-100 border border-border p-4 transition-all duration-200;
 }
 
-.node-card-header {
-  @apply flex items-center gap-3 mb-4;
-}
-
 .node-name {
   @apply text-sm font-medium text-ink;
-}
-
-.node-ip {
-  @apply text-[11px] font-mono text-ink-500;
 }
 
 .node-stat {
@@ -272,6 +247,95 @@
 
 .node-stat-label {
   @apply text-[10px] font-mono text-ink-500 uppercase tracking-[0.06em];
+}
+
+/* ── Status indicator animation ────────────────────── */
+
+@keyframes thinkingPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.thinking-step {
+  @apply flex items-center gap-3 text-sm text-ink-400;
+}
+
+.thinking-step.active {
+  @apply text-ink;
+}
+
+.thinking-step.active .step-indicator {
+  animation: thinkingPulse 1s ease-in-out infinite;
+}
+
+.step-indicator {
+  @apply w-5 h-5 flex items-center justify-center text-[11px] font-mono border border-current;
+}
+
+.thinking-step.completed .step-indicator {
+  @apply bg-safe border-safe text-surface;
+}
+
+/* ── Risk bar ──────────────────────────────────────── */
+
+.risk-bar {
+  @apply h-2 bg-surface-400 relative overflow-hidden;
+}
+
+.risk-bar-fill {
+  @apply absolute inset-y-0 left-0 transition-all duration-700 ease-out;
+}
+
+/* ── Reasoning card ─────────────────────────────────── */
+
+.reasoning-card {
+  @apply border-l-2 border-border pl-4 py-2;
+}
+
+/* ── Hazard tag ────────────────────────────────────── */
+
+.hazard-tag {
+  @apply inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono border tracking-[0.04em];
+}
+
+/* ── Action item ───────────────────────────────────── */
+
+.action-item {
+  @apply flex items-start gap-3 text-sm text-ink-300;
+}
+
+.action-item::before {
+  content: '';
+  @apply w-1.5 h-1.5 mt-2 shrink-0 bg-ink-500;
+}
+
+/* ── Analysis steps ────────────────────────────────── */
+
+.analysis-steps {
+  @apply space-y-3 py-8;
+}
+
+/* ── Progress step ─────────────────────────────────── */
+
+.progress-step {
+  @apply flex items-center gap-3 text-sm transition-colors duration-300;
+}
+
+.progress-step.pending { @apply text-ink-500; }
+.progress-step.running { @apply text-ink; }
+.progress-step.done { @apply text-safe; }
+
+.progress-step .step-badge {
+  @apply w-6 h-6 flex items-center justify-center text-[11px] font-mono border shrink-0;
+}
+
+.progress-step.running .step-badge {
+  @apply border-ink text-ink;
+  animation: thinkingPulse 1s ease-in-out infinite;
+}
+
+.progress-step.done .step-badge {
+  @apply bg-safe border-safe text-surface;
 }
 
 /* ── Intelligence dossier ──────────────────────────── */
@@ -300,24 +364,411 @@
   @apply text-sm text-ink-200;
 }
 
-/* ── Timeline ──────────────────────────────────────── */
+/* ── Intelligence Report Redesign ─────────────────── */
 
-.timeline {
-  @apply space-y-0;
+.intel-report-page {
+  @apply min-h-screen bg-surface;
 }
 
-.timeline-item {
-  @apply flex gap-4 pb-6 relative pl-4 border-l border-border;
+.intel-header {
+  @apply border-b border-border bg-surface-100;
 }
 
-.timeline-dot {
-  @apply absolute -left-[4.5px] w-[7px] h-[7px] bg-surface-400 border-2 border-surface-100;
+.intel-header-top {
+  @apply max-w-[1440px] mx-auto px-8 py-6 flex items-start justify-between gap-8;
 }
 
-.timeline-time {
-  @apply text-[11px] font-mono text-ink-500 w-16 shrink-0;
+.intel-badge {
+  @apply text-[10px] font-mono text-ink-500 uppercase tracking-[0.15em];
 }
 
-.timeline-content {
-  @apply flex-1;
+.intel-title {
+  @apply text-2xl font-light text-ink mt-1;
 }
+
+.intel-meta {
+  @apply flex flex-wrap gap-x-6 gap-y-1 mt-3;
+}
+
+.intel-meta-item {
+  @apply flex items-center gap-2;
+}
+
+.intel-meta-label {
+  @apply text-[10px] font-mono text-ink-500 uppercase tracking-[0.08em];
+}
+
+.intel-meta-value {
+  @apply text-[12px] font-mono text-ink-300;
+}
+
+.intel-header-actions {
+  @apply flex items-center gap-2 shrink-0 flex-wrap;
+}
+
+.intel-content {
+  @apply max-w-[1440px] mx-auto px-8 py-6 flex gap-px bg-border;
+}
+
+.intel-sidebar {
+  @apply w-[280px] shrink-0 bg-surface-100 p-4;
+}
+
+.intel-report {
+  @apply flex-1 bg-surface-100 min-h-[600px];
+}
+
+.intel-report-body {
+  @apply p-8 space-y-10;
+}
+
+.intel-progress {
+  @apply p-8;
+}
+
+.intel-progress-header {
+  @apply mb-8;
+}
+
+/* Sections */
+
+.intel-section {
+  @apply space-y-4;
+}
+
+.intel-section-header {
+  @apply flex items-center gap-3 pb-2 border-b border-border;
+}
+
+.intel-section-number {
+  @apply text-[10px] font-mono text-ink-500;
+}
+
+.intel-section-title {
+  @apply text-sm font-medium text-ink uppercase tracking-[0.08em];
+}
+
+/* Section 1: Executive Summary */
+
+.intel-exec-summary {
+  @apply text-base leading-relaxed text-ink-200 bg-surface-200 border-l-2 border-ink p-5 font-[350];
+}
+
+/* Section 2: Incident Overview */
+
+.intel-overview-grid {
+  @apply grid grid-cols-2 lg:grid-cols-4 gap-px bg-border;
+}
+
+.intel-overview-item {
+  @apply bg-surface-100 p-4;
+}
+
+.intel-overview-label {
+  @apply block text-[10px] font-mono text-ink-500 uppercase tracking-[0.08em];
+}
+
+.intel-overview-value {
+  @apply block text-sm text-ink-300 mt-1;
+}
+
+/* Section 3: Confirmed Facts */
+
+.intel-facts-list {
+  @apply space-y-2;
+}
+
+.intel-fact-item {
+  @apply flex items-start gap-3 text-sm text-ink-300;
+}
+
+.intel-fact-check {
+  @apply text-safe text-sm mt-0.5 shrink-0;
+}
+
+/* Section 4: Assessment */
+
+.intel-assessment-list {
+  @apply space-y-3;
+}
+
+.intel-assessment-item {
+  @apply text-sm text-ink-300 leading-relaxed pl-4 border-l-2 border-warning/50;
+}
+
+/* Section 5: Hazard Analysis */
+
+.intel-hazard-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-4;
+}
+
+.intel-hazard-card {
+  @apply bg-surface-200 border border-border p-5;
+}
+
+.intel-hazard-name {
+  @apply text-sm font-medium text-ink;
+}
+
+.intel-hazard-status {
+  @apply text-[11px] font-mono px-2 py-0.5 border;
+}
+
+.intel-hazard-reason {
+  @apply text-[12px] text-ink-500 leading-relaxed;
+}
+
+/* Section 6: Recommendations */
+
+.intel-rec-list {
+  @apply space-y-3;
+}
+
+.intel-rec-card {
+  @apply flex items-start gap-4 p-4 bg-surface-200 border border-border;
+}
+
+.intel-rec-priority {
+  @apply text-[10px] font-mono text-ink-500 shrink-0 mt-0.5;
+}
+
+.intel-rec-action {
+  @apply text-sm font-medium text-ink;
+}
+
+.intel-rec-reason {
+  @apply text-[12px] text-ink-500 mt-1;
+}
+
+/* Section 7: Resource Estimation */
+
+.intel-resource-grid {
+  @apply grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+}
+
+.intel-resource-card {
+  @apply bg-surface-200 border border-border p-4;
+}
+
+.intel-resource-name {
+  @apply text-[11px] font-mono text-ink-400 uppercase tracking-[0.06em];
+}
+
+.intel-resource-value {
+  @apply text-xl font-light text-ink;
+}
+
+.intel-resource-reason {
+  @apply text-[11px] text-ink-500 mt-1;
+}
+
+/* Section 8: Escalation Forecast */
+
+.intel-forecast-grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-px bg-border;
+}
+
+.intel-forecast-col {
+  @apply bg-surface-100 p-5;
+}
+
+.intel-forecast-header {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.intel-forecast-icon {
+  @apply text-[11px] font-mono px-2 py-1 bg-surface-200 text-ink-400 border border-border;
+}
+
+.intel-forecast-label {
+  @apply text-[11px] font-mono text-ink-400 uppercase tracking-[0.08em];
+}
+
+.intel-forecast-list {
+  @apply space-y-2;
+}
+
+.intel-forecast-item {
+  @apply text-[12px] text-ink-400 leading-relaxed pl-3 border-l-2 border-border;
+}
+
+/* Section 9: Reasoning Tree */
+
+.intel-reasoning-tree {
+  @apply space-y-4;
+}
+
+.intel-reasoning-node {
+  @apply bg-surface-200 border border-border p-5 space-y-2;
+}
+
+.intel-reasoning-detect,
+.intel-reasoning-infer,
+.intel-reasoning-why {
+  @apply pl-4;
+}
+
+.intel-reasoning-label {
+  @apply text-[10px] font-mono text-ink-500 uppercase tracking-[0.1em] block;
+}
+
+.intel-reasoning-value {
+  @apply text-sm text-ink-300;
+}
+
+.intel-reasoning-arrow {
+  @apply text-ink-500 text-xs pl-4;
+}
+
+/* Section 10: JSON */
+
+.intel-json-toggle {
+  @apply flex items-center gap-2 text-[11px] font-mono text-ink-500 hover:text-ink transition-colors;
+}
+
+.intel-json-block {
+  @apply bg-surface-300 border border-border mt-2;
+}
+
+.intel-json-actions {
+  @apply flex items-center gap-4 px-4 py-2 border-b border-border;
+}
+
+.intel-json-pre {
+  @apply p-4 text-[12px] font-mono text-ink-400 overflow-x-auto whitespace-pre leading-relaxed max-h-[500px] overflow-y-auto;
+}
+
+/* ── Toggle switch ──────────────────────────────────── */
+
+.toggle {
+  @apply relative inline-flex w-9 h-5 cursor-pointer items-center shrink-0;
+}
+
+.toggle input {
+  @apply sr-only;
+}
+
+.toggle-track {
+  @apply absolute inset-0 rounded-full bg-surface-300 border border-border transition-colors duration-200;
+}
+
+.toggle input:checked + .toggle-track {
+  @apply bg-safe/30 border-safe/50;
+}
+
+.toggle-thumb {
+  @apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-ink-500 border border-border transition-all duration-200;
+}
+
+.toggle input:checked ~ .toggle-thumb {
+  @apply translate-x-4 bg-safe border-safe;
+}
+
+.toggle input:disabled ~ .toggle-track {
+  @apply opacity-30;
+}
+
+.toggle input:disabled ~ .toggle-thumb {
+  @apply opacity-30;
+}
+
+/* ── Progress bar ──────────────────────────────────── */
+
+.progress-bar {
+  @apply h-1.5 bg-surface-300 overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full transition-all duration-700 ease-out;
+}
+
+/* ── Settings-specific ─────────────────────────────── */
+
+.setting-section {
+  @apply bg-surface-100 border border-border;
+}
+
+.setting-section-header {
+  @apply flex items-center justify-between px-5 py-3.5 border-b border-border cursor-pointer select-none hover:bg-surface-200/50 transition-colors duration-150;
+}
+
+.setting-section-header-left {
+  @apply flex items-center gap-3;
+}
+
+.setting-section-icon {
+  @apply w-4 h-4 text-ink-500 shrink-0;
+}
+
+.setting-section-title {
+  @apply text-[11px] font-semibold text-ink uppercase tracking-[0.1em];
+}
+
+.setting-section-toggle {
+  @apply text-ink-500 hover:text-ink transition-colors duration-150;
+}
+
+.setting-section-body {
+  @apply p-5;
+}
+
+.setting-status-card {
+  @apply bg-surface-200 border border-border p-4;
+}
+
+.setting-status-label {
+  @apply block text-[10px] font-mono text-ink-500 uppercase tracking-[0.08em];
+}
+
+.setting-status-value {
+  @apply block text-sm text-ink mt-1 font-medium;
+}
+
+.setting-metric {
+  @apply text-center p-3 bg-surface-200 border border-border;
+}
+
+.setting-metric-value {
+  @apply text-lg font-light text-ink;
+}
+
+.setting-metric-label {
+  @apply text-[10px] font-mono text-ink-500 uppercase tracking-[0.06em] mt-0.5;
+}
+
+.setting-action-btn {
+  @apply px-3 py-1.5 text-[11px] font-mono border border-border text-ink-400 hover:text-ink hover:border-ink-400 transition-colors duration-150 bg-transparent;
+}
+
+.setting-row {
+  @apply flex items-center justify-between py-2.5;
+}
+
+.setting-row-label {
+  @apply text-sm text-ink-300;
+}
+
+.setting-row-desc {
+  @apply text-[11px] text-ink-500 mt-0.5;
+}
+
+/* Print */
+
+@media print {
+  .intel-sidebar,
+  .intel-header-actions {
+    display: none !important;
+  }
+  .intel-content {
+    padding: 0;
+    max-width: 100%;
+  }
+  .intel-report-body {
+    padding: 0;
+  }
+  .intel-header-top {
+    padding: 1rem;
+  }
+}
+
+

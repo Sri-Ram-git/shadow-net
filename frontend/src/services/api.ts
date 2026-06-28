@@ -16,6 +16,26 @@ api.interceptors.response.use(
 );
 
 export const apiService = {
+  async getSettings(): Promise<Record<string, string>> {
+    const { data } = await api.get('/settings');
+    return data;
+  },
+
+  async getSetting(key: string): Promise<{ key: string; value: string }> {
+    const { data } = await api.get(`/settings/${key}`);
+    return data;
+  },
+
+  async updateSetting(key: string, value: string, updatedBy = 'operator'): Promise<{ ok: boolean; error?: string }> {
+    const { data } = await api.put(`/settings/${key}`, { value, updated_by: updatedBy });
+    return data;
+  },
+
+  async batchUpdateSettings(settings: Record<string, string>, updatedBy = 'operator'): Promise<{ ok: boolean; count?: number; errors?: Record<string, string> }> {
+    const { data } = await api.post('/settings/batch', { settings, updated_by: updatedBy });
+    return data;
+  },
+
   async getDashboard(): Promise<DashboardStats> {
     const { data } = await api.get('/dashboard');
     return data;
@@ -36,7 +56,15 @@ export const apiService = {
     formData.append('title', payload.title);
     formData.append('description', payload.description);
     formData.append('location', payload.location);
-    formData.append('category', payload.category);
+    formData.append('categories', payload.categories.join(','));
+    if (payload.latitude !== undefined) formData.append('latitude', String(payload.latitude));
+    if (payload.longitude !== undefined) formData.append('longitude', String(payload.longitude));
+    if (payload.city) formData.append('city', payload.city);
+    if (payload.state) formData.append('state', payload.state);
+    if (payload.country) formData.append('country', payload.country);
+    if (payload.postal_code) formData.append('postal_code', payload.postal_code);
+    if (payload.place_id) formData.append('place_id', payload.place_id);
+    if (payload.landmark) formData.append('landmark', payload.landmark);
     if (payload.image) {
       formData.append('image', payload.image);
     }

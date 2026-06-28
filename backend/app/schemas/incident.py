@@ -32,7 +32,15 @@ class IncidentCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1, max_length=2000)
     location: str = Field(..., min_length=1, max_length=300)
-    category: IncidentCategory = IncidentCategory.OTHER
+    categories: list[str] = Field(default_factory=lambda: ["other"])
+    latitude: float | None = None
+    longitude: float | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    postal_code: str | None = None
+    place_id: str | None = None
+    landmark: str | None = None
 
 
 class IncidentResponse(BaseModel):
@@ -41,6 +49,14 @@ class IncidentResponse(BaseModel):
     description: str
     location: str
     category: str
+    latitude: float | None = None
+    longitude: float | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    postal_code: str | None = None
+    place_id: str | None = None
+    landmark: str | None = None
     severity: str
     status: str
     image_url: Optional[str] = None
@@ -48,8 +64,3 @@ class IncidentResponse(BaseModel):
     synced: bool
 
     model_config = {"from_attributes": True}
-
-
-class IncidentListResponse(BaseModel):
-    items: list[IncidentResponse]
-    total: int

@@ -22,5 +22,4 @@ class SyncTriggerResponse(BaseModel):
     synced: int = 0
 
 
-class SyncAction(BaseModel):
-    action: str = Field(default="sync_all", description="Sync action to perform")
+

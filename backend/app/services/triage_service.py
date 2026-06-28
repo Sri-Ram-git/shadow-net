@@ -22,16 +22,21 @@ class TriageService(BaseService):
             description=incident.description,
             location=incident.location,
             category=incident.category,
+            latitude=incident.latitude,
+            longitude=incident.longitude,
         )
+
+        summary = result.get("executive_summary", incident.title)
+        severity = result.get("estimated_severity", "P3")
 
         triage = AITriage(
             incident_id=incident.id,
-            severity=result.get("severity", "P3"),
-            department=result.get("department", "General"),
-            injured=result.get("injured", 0),
-            critical=result.get("critical", 0),
-            location=result.get("location", incident.location),
-            summary=result.get("summary", incident.title),
+            severity=severity,
+            department="Operations",
+            injured=0,
+            critical=0,
+            location=incident.location,
+            summary=summary[:500],
             raw_response=json.dumps(result),
         )
         triage = await self.triage_repo.create(triage)
@@ -51,7 +56,7 @@ class TriageService(BaseService):
             action="triage.completed",
             entity_type="triage",
             entity_id=triage.id,
-            details=f"AI Triage completed for incident {incident_id}: {triage.severity}",
+            details=f"AI Triage completed for incident {incident_id}: {triage.severity} | {summary[:100]}",
         )
 
         return triage

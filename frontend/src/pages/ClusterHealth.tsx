@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
 import { wsService } from '../services/websocket';
+import { MetricCell } from '../components/MetricCell';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import type { ClusterMetrics, ClusterNode } from '../types';
 
 export function ClusterHealth() {
+  useDocumentTitle('Cluster');
   const [metrics, setMetrics] = useState<ClusterMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,8 +26,23 @@ export function ClusterHealth() {
   if (loading) {
     return (
       <div className="page">
-        <div className="empty-state">
-          <div className="empty-state-icon">{'[ scanning cluster... ]'}</div>
+        <div className="page-header">
+          <div className="skeleton h-7 w-32 mb-2" />
+          <div className="skeleton h-4 w-56" />
+        </div>
+        <div className="metrics-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="metric-cell">
+              <div className="skeleton h-8 w-16" />
+              <div className="skeleton h-3 w-20 mt-2" />
+            </div>
+          ))}
+        </div>
+        <div className="panel space-y-4">
+          <div className="skeleton h-4 w-16" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="skeleton h-10 w-full" />
+          ))}
         </div>
       </div>
     );
@@ -106,15 +124,6 @@ export function ClusterHealth() {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function MetricCell({ value, label, valueClass }: { value: string | number; label: string; valueClass?: string }) {
-  return (
-    <div className="metric-cell">
-      <span className={`metric-value ${valueClass || ''}`}>{value}</span>
-      <span className="metric-label">{label}</span>
     </div>
   );
 }

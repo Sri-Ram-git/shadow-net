@@ -16,16 +16,6 @@ class NodeResponse(BaseModel):
     last_heartbeat: str
 
 
-class ClusterStatsResponse(BaseModel):
-    total_pods: int
-    healthy_pods: int
-    total_cpu: float
-    used_cpu: float
-    total_memory: float
-    used_memory: float
-    network_health: float
-
-
 class ClusterMetricsResponse(BaseModel):
     nodes: list[NodeResponse]
     total_pods: int
