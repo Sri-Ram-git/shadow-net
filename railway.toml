@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd backend && pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi"
+
+[deploy]
+startCommand = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --proxy-headers"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+
+[service]
+name = "shadownet-api"

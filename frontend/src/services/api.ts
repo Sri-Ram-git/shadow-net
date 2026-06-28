@@ -1,9 +1,22 @@
 import axios from 'axios';
 import type { Incident, AITriage, ClusterMetrics, DashboardStats, SyncQueueItem, CreateIncidentPayload } from '../types';
 
+function getBaseURL(): string {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (envUrl) return envUrl;
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname, port } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return `${protocol}//${hostname}:8001/api`;
+    }
+    return `${protocol}//${hostname}/api`;
+  }
+  return '/api';
+}
+
 const api = axios.create({
-  baseURL: '/api',
-  timeout: 15000,
+  baseURL: getBaseURL(),
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
 

@@ -288,7 +288,15 @@ export function AITriage() {
         <div className="intel-header-top">
           <div className="intel-header-main">
             <span className="intel-badge">EMERGENCY INTELLIGENCE REPORT</span>
-            <h1 className="intel-title">{selected?.title || '—'}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="intel-title">{selected?.title || '—'}</h1>
+              {analysis?.source?.includes('Demo') && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono border border-warning/40 text-warning bg-warning-bg">
+                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z" /><path d="M18 12h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h2" /></svg>
+                  DEMO AI
+                </span>
+              )}
+            </div>
             <div className="intel-meta">
               <span className="intel-meta-item">
                 <span className="intel-meta-label">ID</span>

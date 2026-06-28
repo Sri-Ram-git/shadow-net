@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Node
+frontend/node_modules
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+backend/.venv
+
+# Environment
+.env
+backend/.env
+frontend/.env
+
+# Data
+backend/data/shadownet.db
+backend/data/uploads
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+README.md
+LICENSE

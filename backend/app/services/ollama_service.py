@@ -73,13 +73,185 @@ RULES:
 8. The reasoning tree must show complete analytical chains from detection to conclusion."""
 
 
+DEMO_RESPONSES = [
+    {
+        "incident_type": "Wildfire",
+        "priority": "Immediate",
+        "estimated_severity": "P1",
+        "confidence": 88,
+        "source": "AI Intelligence Report (Demo)",
+        "executive_summary": "A rapidly spreading wildfire has been reported in the vicinity of the incident location. Current weather conditions including wind speed and low humidity are expected to accelerate fire spread. The fire front poses immediate threat to adjacent structures and natural habitats. Initial assessment indicates a complex fire behavior pattern requiring coordinated aerial and ground response. Evacuation protocols should be initiated for areas downwind of the fire perimeter. Recommended posture: Full emergency response with multi-agency coordination.",
+        "confirmed_facts": [
+            "Wildfire reported at incident location",
+            "Fire shows active spread behavior",
+            "Weather conditions favor continued fire growth",
+            "Structures potentially threatened in fire path",
+        ],
+        "professional_assessment": [
+            "The wildfire is demonstrating characteristics of a fast-moving surface fire with potential for crown fire development under current conditions.",
+            "Dry fuel loads and predicted wind patterns suggest the fire may grow significantly within the next 2-3 hours without aggressive initial attack.",
+            "Critical infrastructure including power lines and communication towers in the fire path require protective measures.",
+        ],
+        "hazard_analysis": [
+            {"hazard": "Active Fire Front", "status": "High", "reason": "Fire is actively spreading with potential for rapid growth"},
+            {"hazard": "Smoke Inhalation", "status": "High", "reason": "Smoke plume affecting downwind populated areas"},
+            {"hazard": "Structural Ignition", "status": "Medium", "reason": "Structures within potential fire reach but may be defensible"},
+            {"hazard": "Access Road Blockage", "status": "Medium", "reason": "Primary access routes may become compromised"},
+        ],
+        "risk_analysis": [
+            {"risk": "Fire Escalation", "percentage": 82, "reason": "Dry conditions and wind create high escalation potential"},
+            {"risk": "Life Safety", "percentage": 75, "reason": "Populated areas downwind face direct threat"},
+            {"risk": "Property Loss", "percentage": 68, "reason": "Multiple structures in potential fire path"},
+            {"risk": "Environmental Damage", "percentage": 55, "reason": "Fire in ecologically sensitive area"},
+        ],
+        "operational_recommendations": [
+            {"priority": 1, "action": "Initiate immediate evacuation of threatened areas", "reason": "Fire progression rate exceeds safe evacuation timeline without early action"},
+            {"priority": 2, "action": "Deploy aerial firefighting assets for initial attack", "reason": "Aerial suppression most effective in early stages before fire establishes"},
+            {"priority": 3, "action": "Establish unified command with local fire agencies", "reason": "Multi-agency coordination essential for resource management and strategy alignment"},
+            {"priority": 4, "action": "Set up fire observation posts for real-time tracking", "reason": "Continuous monitoring needed to adapt tactics as fire behavior evolves"},
+            {"priority": 5, "action": "Pre-position medical resources for potential casualties", "reason": "Smoke inhalation and burn injuries require immediate medical capacity"},
+        ],
+        "resource_estimation": [
+            {"resource": "Fire Crews", "estimated": 40, "reason": "Multiple strike teams needed for fire perimeter containment"},
+            {"resource": "Aircraft", "estimated": 4, "reason": "Air tankers and helicopters for aerial suppression"},
+            {"resource": "Ambulances", "estimated": 6, "reason": "Medical support for evacuation and firefighter safety"},
+            {"resource": "Police Units", "estimated": 15, "reason": "Traffic control and evacuation area security"},
+            {"resource": "Water Tenders", "estimated": 8, "reason": "Water supply for areas without hydrant access"},
+        ],
+        "escalation_forecast": {
+            "next_15_minutes": ["Fire perimeter expanding under current wind conditions", "Initial attack resources arriving on scene", "Evacuation orders being issued for immediate threat zone"],
+            "next_hour": ["Potential for structures to be threatened if wind shifts", "Mutual aid resources requested from neighboring jurisdictions", "Possible road closures in affected areas"],
+            "next_6_hours": ["Fire may reach full containment perimeter if initial attack successful", "Structure protection priorities established based on threat assessment", "Long-term suppression strategy being developed by incident command"],
+        },
+        "reasoning_tree": [
+            {"detected": "Incident title contains wildfire reference", "inference": "Active wildfire incident", "reason": "Title directly indicates wildfire scenario requiring immediate response"},
+            {"detected": "Fire category selected in incident report", "inference": "Confirmed fire incident type", "reason": "Category selection corroborates title classification"},
+            {"detected": "Active spread mentioned in description", "inference": "Fire is currently propagating", "reason": "Active fire behavior requires urgent intervention to prevent escalation"},
+            {"detected": "No containment resources mentioned", "inference": "Fire is uncontrolled at time of reporting", "reason": "Uncontrolled fire necessitates immediate resource deployment"},
+        ],
+    },
+    {
+        "incident_type": "Mass Casualty Traffic Incident",
+        "priority": "Immediate",
+        "estimated_severity": "P1",
+        "confidence": 85,
+        "source": "AI Intelligence Report (Demo)",
+        "executive_summary": "A serious multi-vehicle collision has occurred resulting in multiple casualties and significant traffic disruption. Initial reports indicate at least three vehicles involved with unknown number of trapped occupants. The incident has blocked a major arterial route, complicating emergency vehicle access. Medical triage and extrication operations are the immediate priorities. High likelihood of serious injuries requiring trauma center capacity activation. Recommended posture: Full emergency medical response with mass casualty incident protocols.",
+        "confirmed_facts": [
+            "Multi-vehicle collision reported",
+            "Multiple casualties confirmed at scene",
+            "Vehicles blocking traffic lanes",
+            "Emergency services dispatched and en route",
+        ],
+        "professional_assessment": [
+            "MCI protocols should be activated given the multiple casualty count and vehicle entrapment potential.",
+            "Extrication operations will require heavy rescue equipment and coordination between fire and medical services.",
+            "Traffic diversion and corridor management essential for emergency vehicle access and hospital transport routes.",
+        ],
+        "hazard_analysis": [
+            {"hazard": "Vehicle Instability", "status": "High", "reason": "Damaged vehicles may shift during extrication operations"},
+            {"hazard": "Fuel Spill", "status": "Medium", "reason": "Vehicle fuel tanks may be compromised in collision"},
+            {"hazard": "Traffic Hazards", "status": "High", "reason": "Secondary collisions risk due to obstructed roadway"},
+            {"hazard": "Fire Risk", "status": "Medium", "reason": "Electrical damage and fuel create ignition potential"},
+        ],
+        "risk_analysis": [
+            {"risk": "Life Safety", "percentage": 85, "reason": "Multiple casualties with potentially severe injuries"},
+            {"risk": "Traffic Disruption", "percentage": 90, "reason": "Major route blocked, causing widespread traffic impact"},
+            {"risk": "Resource Strain", "percentage": 70, "reason": "MCI may strain local emergency medical resources"},
+            {"risk": "Secondary Incidents", "percentage": 60, "reason": "Congestion and diversion routes increase accident risk"},
+        ],
+        "operational_recommendations": [
+            {"priority": 1, "action": "Establish MCI command and initiate triage operations", "reason": "Standard MCI protocol requires immediate command structure and patient prioritization"},
+            {"priority": 2, "action": "Request additional ambulances and trauma center activation", "reason": "Multiple serious casualties may exceed local EMS capacity"},
+            {"priority": 3, "action": "Deploy heavy rescue for vehicle extrication", "reason": "Trapped casualties require specialized equipment and training for safe extraction"},
+            {"priority": 4, "action": "Implement traffic diversion and establish EMS corridor", "reason": "Emergency vehicle access and patient transport routes must be maintained"},
+            {"priority": 5, "action": "Activate hospital emergency preparedness plans", "reason": "Receiving hospitals need preparation for multiple trauma patients"},
+        ],
+        "resource_estimation": [
+            {"resource": "Ambulances", "estimated": 8, "reason": "Multiple patient transport requirement for MCI"},
+            {"resource": "Fire Rescue Units", "estimated": 4, "reason": "Extrication and scene safety operations"},
+            {"resource": "Traffic Control", "estimated": 10, "reason": "Diversion and corridor management personnel"},
+            {"resource": "Medical Teams", "estimated": 6, "reason": "Triage and treatment teams for casualty management"},
+        ],
+        "escalation_forecast": {
+            "next_15_minutes": ["First responders arriving on scene and establishing command", "Initial triage being conducted to determine casualty numbers", "Traffic management units deploying for diversion setup"],
+            "next_hour": ["Extrication operations underway for trapped occupants", "Patient transport to hospitals beginning", "Traffic impact extending to surrounding road network"],
+            "next_6_hours": ["Scene investigation and vehicle removal operations", "Roadway clearance and restoration of traffic flow", "Hospital resource assessment and patient status updates"],
+        },
+        "reasoning_tree": [
+            {"detected": "Multiple vehicles involved in collision", "inference": "Mass casualty incident likely", "reason": "Number of vehicles suggests potential for multiple casualties requiring MCI response"},
+            {"detected": "Road blockage reported", "inference": "Significant traffic disruption", "reason": "Major route obstruction creates access challenges for emergency vehicles"},
+            {"detected": "Medical category in incident report", "inference": "Medical response primary requirement", "reason": "Category confirms medical emergency as primary incident type"},
+        ],
+    },
+    {
+        "incident_type": "Infrastructure Failure",
+        "priority": "High",
+        "estimated_severity": "P2",
+        "confidence": 80,
+        "source": "AI Intelligence Report (Demo)",
+        "executive_summary": "A critical infrastructure failure has been reported affecting essential utility services. The incident involves damage to electrical distribution infrastructure with potential for cascading impacts on dependent systems. Initial assessment indicates a localized failure with risk of wider disruption if not contained. Public safety is not immediately threatened but essential services including healthcare facilities may be affected. Recommended posture: Coordinated infrastructure response with utility company engagement.",
+        "confirmed_facts": [
+            "Infrastructure failure affecting utility services",
+            "Electrical distribution system compromised",
+            "Localized impact area confirmed",
+            "Utility response teams notified and responding",
+        ],
+        "professional_assessment": [
+            "The infrastructure failure appears to be electrical in nature based on reported characteristics, potentially involving transformer or distribution line damage.",
+            "Cascading failure risk requires immediate isolation of affected circuits to prevent wider grid disruption.",
+            "Critical facilities with backup power should be verified to ensure uninterrupted operation.",
+        ],
+        "hazard_analysis": [
+            {"hazard": "Electrical Hazard", "status": "High", "reason": "Downed or damaged electrical equipment poses electrocution risk"},
+            {"hazard": "Fire Risk", "status": "Medium", "reason": "Electrical faults may ignite surrounding materials"},
+            {"hazard": "Service Disruption", "status": "High", "reason": "Essential services may lose power affecting public safety"},
+        ],
+        "risk_analysis": [
+            {"risk": "Extended Outage", "percentage": 65, "reason": "Repair complexity may extend restoration timeline"},
+            {"risk": "Critical Facility Impact", "percentage": 55, "reason": "Hospitals and emergency services may be affected"},
+            {"risk": "Cascading Failure", "percentage": 45, "reason": "Potential for wider grid impact if not isolated"},
+            {"risk": "Public Safety", "percentage": 40, "reason": "Traffic signals and street lighting affected at night"},
+        ],
+        "operational_recommendations": [
+            {"priority": 1, "action": "Isolate affected electrical circuits to prevent cascading failure", "reason": "Grid protection requires immediate isolation of damaged infrastructure"},
+            {"priority": 2, "action": "Verify backup power at critical facilities", "reason": "Hospitals and emergency services must maintain operations"},
+            {"priority": 3, "action": "Deploy utility damage assessment teams", "reason": "Full extent of damage assessment needed for repair planning"},
+            {"priority": 4, "action": "Implement traffic management at affected intersections", "reason": "Non-functioning traffic signals create accident risks"},
+        ],
+        "resource_estimation": [
+            {"resource": "Utility Crews", "estimated": 6, "reason": "Electrical repair and restoration teams"},
+            {"resource": "Traffic Control", "estimated": 4, "reason": "Intersection management during power outage"},
+        ],
+        "escalation_forecast": {
+            "next_15_minutes": ["Damage assessment teams deploying", "Isolation procedures being implemented", "Critical facility verification underway"],
+            "next_hour": ["Repair operations commencing on isolated sections", "Alternative power routing being evaluated", "Public information about outage being released"],
+            "next_6_hours": ["Partial restoration of services expected", "Full damage assessment complete", "Long-term repair plan developed"],
+        },
+        "reasoning_tree": [
+            {"detected": "Infrastructure category selected", "inference": "Infrastructure failure incident", "reason": "Primary classification indicates infrastructure incident"},
+            {"detected": "Title references infrastructure damage", "inference": "Physical infrastructure compromised", "reason": "Title confirms damage to utility infrastructure"},
+            {"detected": "Electrical systems involved", "inference": "Power distribution infrastructure affected", "reason": "Description indicates electrical infrastructure primary failure point"},
+        ],
+    },
+]
+
+
 class OllamaService:
     def __init__(self):
         self.endpoint = settings.ollama_endpoint
         self.model = settings.ollama_model
-        self.client = httpx.AsyncClient(timeout=120.0)
+        self.demo_mode = settings.demo_mode
+        self._demo_index = 0
+        if self.demo_mode:
+            logger.info("AI Engine running in DEMO MODE — returning realistic synthetic analyses")
+        if not self.demo_mode:
+            self.client = httpx.AsyncClient(timeout=120.0)
 
     async def analyze(self, title: str, description: str, location: str, category: str, latitude: float | None = None, longitude: float | None = None) -> dict:
+        if self.demo_mode:
+            return self._demo_response(title, description, location)
+
         prompt = SYSTEM_PROMPT.format(
             title=title,
             description=description,
@@ -113,6 +285,21 @@ class OllamaService:
         except Exception as e:
             logger.error(f"Ollama error: {e}")
             return self._fallback(title, description, location)
+
+    def _demo_response(self, title: str, description: str, location: str) -> dict:
+        idx = self._demo_index % len(DEMO_RESPONSES)
+        self._demo_index += 1
+        resp = dict(DEMO_RESPONSES[idx])
+        resp["executive_summary"] = (
+            f"[Demo AI] Incident reported at {location}: {title}. "
+            + resp["executive_summary"]
+        )
+        resp["source"] = "AI Intelligence Report (Demo)"
+        resp["reasoning_tree"] = [
+            {"detected": f"Demo mode active — no real AI backend connected", "inference": "Synthetic analysis generated", "reason": "AI service running in demonstration mode for evaluation purposes"},
+            *resp.get("reasoning_tree", []),
+        ]
+        return self._validate(resp, title, description, location)
 
     def _is_valid(self, parsed: dict) -> bool:
         required = ["executive_summary", "confirmed_facts", "professional_assessment"]
@@ -240,7 +427,7 @@ class OllamaService:
             "priority": "Medium",
             "estimated_severity": "P3",
             "confidence": 30,
-            "source": "Incident Report",
+            "source": "Incident Report (Fallback)",
             "executive_summary": (
                 f"An incident has been reported at {location} concerning: {title}. "
                 f"Based on initial information, this appears to be a {inferred_type.lower()} situation. "
@@ -303,4 +490,5 @@ class OllamaService:
         }
 
     async def close(self):
-        await self.client.aclose()
+        if hasattr(self, 'client') and self.client:
+            await self.client.aclose()
