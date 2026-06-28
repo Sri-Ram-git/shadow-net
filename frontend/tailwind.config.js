@@ -63,9 +63,6 @@ export default {
       maxWidth: {
         content: '1440px',
       },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-      },
       animation: {
         'fade': 'fadeIn 0.4s ease-out',
         'fade-up': 'fadeUp 0.5s ease-out',
