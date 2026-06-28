@@ -4,14 +4,9 @@ import type { Incident, AITriage, ClusterMetrics, DashboardStats, SyncQueueItem,
 function getBaseURL(): string {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (envUrl) return envUrl;
-  if (typeof window !== 'undefined') {
-    const { protocol, hostname, port } = window.location;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return `${protocol}//${hostname}:8001/api`;
-    }
-    return `${protocol}//${hostname}/api`;
-  }
-  return '/api';
+  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
+  const host = typeof window !== 'undefined' ? window.location.host : 'localhost:8001';
+  return `${protocol}//${host}/api`;
 }
 
 const api = axios.create({

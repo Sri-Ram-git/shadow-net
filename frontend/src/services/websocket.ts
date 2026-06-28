@@ -12,6 +12,10 @@ class WebSocketService {
     if (this.ws?.readyState === WebSocket.OPEN || this.isConnecting) return;
     this.isConnecting = true;
 
+    const envWsUrl = import.meta.env.VITE_WS_URL as string | undefined;
+    if (envWsUrl) {
+      try { this.ws = new WebSocket(envWsUrl); this.isConnecting = false; return; } catch { /* fall through */ }
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${protocol}//${window.location.host}/api/ws`;
 
