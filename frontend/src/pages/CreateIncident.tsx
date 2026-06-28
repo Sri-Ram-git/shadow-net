@@ -2,221 +2,127 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import toast from 'react-hot-toast';
-import {
-  AlertTriangle,
-  Send,
-  Image as ImageIcon,
-  MapPin,
-  X,
-  Loader2,
-} from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
 import type { IncidentCategory } from '../types';
 
-const categories: { value: IncidentCategory; label: string; icon: string }[] = [
-  { value: 'fire', label: 'Fire', icon: '🔥' },
-  { value: 'medical', label: 'Medical', icon: '🏥' },
-  { value: 'flood', label: 'Flood', icon: '🌊' },
-  { value: 'earthquake', label: 'Earthquake', icon: '🏚️' },
-  { value: 'infrastructure', label: 'Infrastructure', icon: '🏗️' },
-  { value: 'hazard', label: 'Hazard', icon: '☣️' },
-  { value: 'other', label: 'Other', icon: '📋' },
+const categories: { value: IncidentCategory; label: string }[] = [
+  { value: 'fire', label: 'Fire' },
+  { value: 'medical', label: 'Medical' },
+  { value: 'flood', label: 'Flood' },
+  { value: 'earthquake', label: 'Earthquake' },
+  { value: 'infrastructure', label: 'Infrastructure' },
+  { value: 'hazard', label: 'Hazard' },
+  { value: 'other', label: 'Other' },
 ];
 
 export function CreateIncident() {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    location: '',
-    category: '' as IncidentCategory | '',
-  });
+  const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [form, setForm] = useState({ title: '', description: '', location: '', category: '' as IncidentCategory | '' });
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-      reader.readAsDataURL(file);
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      setFile(f);
+      const r = new FileReader();
+      r.onload = (ev) => setPreview(ev.target?.result as string);
+      r.readAsDataURL(f);
     }
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.description || !form.location || !form.category) {
-      toast.error('Please fill all required fields');
+      toast.error('All fields required');
       return;
     }
-
     setSubmitting(true);
     try {
-      const incident = await apiService.createIncident({
-        title: form.title,
-        description: form.description,
-        location: form.location,
-        category: form.category as IncidentCategory,
-        image: imageFile || undefined,
+      await apiService.createIncident({
+        title: form.title, description: form.description,
+        location: form.location, category: form.category as IncidentCategory,
+        image: file || undefined,
       });
-      toast.success('Incident reported successfully');
+      toast.success('Incident recorded');
       navigate('/incidents');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to create incident');
+      toast.error(err instanceof Error ? err.message : 'Failed');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const isFormValid = form.title && form.description && form.location && form.category;
+  const valid = form.title && form.description && form.location && form.category;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold gradient-text">Report Emergency</h1>
-        <p className="text-sm text-gray-500 mt-1">Submit a new incident for AI triage and dispatch</p>
+    <div className="page max-w-2xl mx-auto">
+      <div className="page-header">
+        <h1 className="page-title">Report Incident</h1>
+        <p className="page-subtitle">Submit an emergency report for triage and dispatch</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="card space-y-5">
+      <form onSubmit={submit} className="space-y-6">
+        <div className="panel space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
-              Title <span className="text-danger">*</span>
-            </label>
-            <input
-              type="text"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="e.g., Transformer Explosion at Main Street"
-              className="input-field"
-              maxLength={200}
-              required
-            />
+            <label className="mono-label mb-1.5 block">Title</label>
+            <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Substation fire" className="input" maxLength={200} required />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
-              Description <span className="text-danger">*</span>
-            </label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Describe the emergency situation in detail..."
-              className="input-field min-h-[120px] resize-y"
-              maxLength={2000}
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1 text-right">{form.description.length}/2000</p>
+            <label className="mono-label mb-1.5 block">Description</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the situation…" className="textarea" maxLength={2000} required />
+            <p className="text-[11px] font-mono text-ink-500 mt-1 text-right">{form.description.length}/2000</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Location <span className="text-danger">*</span>
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input
-                  type="text"
-                  value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  placeholder="e.g., Sector 12, Main Street"
-                  className="input-field pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Category <span className="text-danger">*</span>
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat.value}
-                    type="button"
-                    onClick={() => setForm({ ...form, category: cat.value })}
-                    className={`p-2 rounded-lg text-center transition-all ${
-                      form.category === cat.value
-                        ? 'bg-accent/10 border border-accent/30 text-accent'
-                        : 'bg-dark-700 border border-dark-500 text-gray-400 hover:border-dark-400'
-                    }`}
-                  >
-                    <span className="text-lg">{cat.icon}</span>
-                    <p className="text-xs mt-0.5">{cat.label}</p>
-                  </button>
-                ))}
-              </div>
+          <div>
+            <label className="mono-label mb-1.5 block">Location</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-500" />
+              <input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Sector, street, area…" className="input pl-9" required />
             </div>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
-              Image (optional)
-            </label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageSelect}
-              accept="image/*"
-              className="hidden"
-            />
-            {imagePreview ? (
-              <div className="relative inline-block">
-                <img
-                  src={imagePreview}
-                  alt="Incident preview"
-                  className="h-48 rounded-lg object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 p-1 rounded-full bg-dark-900/80 hover:bg-dark-900 transition-colors"
+            <label className="mono-label mb-2 block">Category</label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button type="button" key={c.value}
+                  onClick={() => setForm({ ...form, category: c.value })}
+                  className={`px-3 py-1.5 text-sm border transition-colors ${
+                    form.category === c.value
+                      ? 'bg-ink text-surface border-ink'
+                      : 'bg-transparent text-ink-400 border-border hover:border-ink-400'
+                  }`}
                 >
-                  <X className="w-4 h-4" />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mono-label mb-1.5 block">Image (optional)</label>
+            <input type="file" ref={fileRef} onChange={handleFile} accept="image/*" className="hidden" />
+            {preview ? (
+              <div className="relative inline-block">
+                <img src={preview} alt="preview" className="h-40 object-cover border border-border" />
+                <button type="button" onClick={() => { setPreview(null); setFile(null); if (fileRef.current) fileRef.current.value = ''; }}
+                  className="absolute top-2 right-2 bg-surface-100 border border-border p-1 hover:bg-surface-200 transition-colors">
+                  <X className="w-3 h-3 text-ink-400" />
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-dark-500 hover:border-dark-400 transition-colors text-sm text-gray-400 hover:text-gray-300"
-              >
-                <ImageIcon className="w-5 h-5" />
-                Upload image
+              <button type="button" onClick={() => fileRef.current?.click()}
+                className="px-4 py-3 border border-dashed border-border text-sm text-ink-500 hover:border-ink-400 transition-colors w-full text-left">
+                Attach image
               </button>
             )}
           </div>
         </div>
 
         <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => navigate('/incidents')}
-            className="btn-secondary"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!isFormValid || submitting}
-            className="btn-primary flex items-center gap-2"
-          >
-            {submitting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-            {submitting ? 'Submitting...' : 'Submit Incident'}
+          <button type="button" onClick={() => navigate('/incidents')} className="btn-secondary text-sm">Cancel</button>
+          <button type="submit" disabled={!valid || submitting} className="btn-primary text-sm">
+            {submitting ? 'Submitting…' : 'Submit Report'}
           </button>
         </div>
       </form>

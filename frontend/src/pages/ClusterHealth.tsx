@@ -2,240 +2,137 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
 import { wsService } from '../services/websocket';
 import type { ClusterMetrics, ClusterNode } from '../types';
-import {
-  Server,
-  RefreshCw,
-  Cpu,
-  HardDrive,
-  Activity,
-  Network,
-  Wifi,
-  WifiOff,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
 
 export function ClusterHealth() {
   const [metrics, setMetrics] = useState<ClusterMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchMetrics = useCallback(async () => {
-    try {
-      const data = await apiService.getClusterMetrics();
-      setMetrics(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch cluster metrics');
-    } finally {
-      setLoading(false);
-    }
+  const fetch = useCallback(async () => {
+    try { setMetrics(await apiService.getClusterMetrics()); }
+    catch { /* */ }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, 5000);
-    const unsub = wsService.onMessage((msg) => {
-      if (msg.type === 'cluster_update') fetchMetrics();
-    });
-    return () => {
-      clearInterval(interval);
-      unsub();
-    };
-  }, [fetchMetrics]);
+    fetch();
+    const i = setInterval(fetch, 5000);
+    const u = wsService.onMessage((m) => { if (m.type === 'cluster_update') fetch(); });
+    return () => { clearInterval(i); u(); };
+  }, [fetch]);
 
-  const cpuPercent = metrics ? Math.round((metrics.used_cpu / metrics.total_cpu) * 100) : 0;
-  const memPercent = metrics ? Math.round((metrics.used_memory / metrics.total_memory) * 100) : 0;
-  const healthColor = metrics?.network_health !== undefined
-    ? metrics.network_health >= 80 ? '#2ed573' : metrics.network_health >= 50 ? '#ffa502' : '#ff4757'
-    : '#2ed573';
+  if (loading) {
+    return (
+      <div className="page">
+        <div className="empty-state">
+          <div className="empty-state-icon">{'[ scanning cluster... ]'}</div>
+        </div>
+      </div>
+    );
+  }
+
+  const cpu = metrics ? Math.round((metrics.used_cpu / metrics.total_cpu) * 100) : 0;
+  const mem = metrics ? Math.round((metrics.used_memory / metrics.total_memory) * 100) : 0;
+  const nw = metrics?.network_health ?? 0;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">Cluster Health</h1>
-          <p className="text-sm text-gray-500 mt-1">Real-time Kubernetes cluster monitoring</p>
-        </div>
-        <button onClick={fetchMetrics} className="btn-secondary flex items-center gap-2 text-sm" disabled={loading}>
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+    <div className="page">
+      <div className="page-header">
+        <h1 className="page-title">Cluster</h1>
+        <p className="page-subtitle">Infrastructure status and node monitoring</p>
       </div>
 
-      {error && (
-        <div className="bg-danger/10 border border-danger/30 rounded-lg p-4 text-danger-400 text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Cluster Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="card">
-          <div className="flex items-center justify-between mb-2">
-            <span className="stat-label">Total Pods</span>
-            <Activity className="w-4 h-4 text-accent" />
-          </div>
-          <div className="stat-value text-accent">
-            {metrics?.healthy_pods ?? 0}/{metrics?.total_pods ?? 0}
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Healthy / Total</p>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-2">
-            <span className="stat-label">CPU Usage</span>
-            <Cpu className="w-4 h-4 text-success" />
-          </div>
-          <div className="stat-value text-success">{metrics ? `${cpuPercent}%` : '—'}</div>
-          <div className="w-full bg-dark-700 rounded-full h-1.5 mt-2">
-            <div className="h-1.5 rounded-full bg-success transition-all" style={{ width: `${cpuPercent}%` }} />
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-2">
-            <span className="stat-label">Memory</span>
-            <HardDrive className="w-4 h-4 text-warning" />
-          </div>
-          <div className="stat-value text-warning">{metrics ? `${memPercent}%` : '—'}</div>
-          <div className="w-full bg-dark-700 rounded-full h-1.5 mt-2">
-            <div className="h-1.5 rounded-full bg-warning transition-all" style={{ width: `${memPercent}%` }} />
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-2">
-            <span className="stat-label">Network Health</span>
-            <Network className="w-4 h-4" style={{ color: healthColor }} />
-          </div>
-          <div className="stat-value" style={{ color: healthColor }}>
-            {metrics ? `${metrics.network_health}%` : '—'}
-          </div>
-          <div className="w-full bg-dark-700 rounded-full h-1.5 mt-2">
-            <div className="h-1.5 rounded-full transition-all" style={{ width: `${metrics?.network_health ?? 0}%`, backgroundColor: healthColor }} />
-          </div>
-        </div>
+      {/* Metrics */}
+      <div className="metrics-grid">
+        <MetricCell value={metrics ? `${metrics.healthy_pods}/${metrics.total_pods}` : '—'} label="Pods" />
+        <MetricCell value={`${cpu}%`} label="CPU" />
+        <MetricCell value={`${mem}%`} label="Memory" />
+        <MetricCell value={`${nw}%`} label="Network" valueClass={nw >= 80 ? 'text-safe' : nw >= 50 ? 'text-warning' : 'text-critical'} />
+        <MetricCell value={metrics?.nodes.length ?? 0} label="Nodes" />
+        <MetricCell value={metrics?.nodes.filter(n => n.status === 'Ready').length ?? 0} label="Ready" valueClass="text-safe" />
       </div>
 
-      {/* Node List */}
-      <div className="card">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Nodes</h3>
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
-          </div>
-        ) : !metrics || metrics.nodes.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Server className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No nodes available</p>
+      {/* Nodes */}
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Nodes</span>
+        </div>
+        {(!metrics || metrics.nodes.length === 0) ? (
+          <div className="empty-state py-12">
+            <pre className="empty-state-icon">{'[ ]'}</pre>
+            <p className="empty-state-title">No nodes discovered</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-border-dark">
             {metrics.nodes.map((node) => (
-              <NodeCard key={node.name} node={node} />
+              <NodeRow key={node.name} node={node} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Topology Visualization */}
-      <div className="card">
-        <h3 className="text-sm font-semibold text-gray-300 mb-4">Network Topology</h3>
-        <div className="flex items-center justify-center p-8">
-          {metrics && metrics.nodes.length > 0 ? (
-            <div className="flex items-center gap-8">
-              {metrics.nodes.map((node, idx) => (
-                <div key={node.name} className="flex items-center gap-4">
-                  <div
-                    className={`w-24 h-24 rounded-xl border-2 flex flex-col items-center justify-center gap-1 ${
-                      node.status === 'Ready'
-                        ? 'border-success/50 bg-success/5'
-                        : node.status === 'NotReady'
-                        ? 'border-danger/50 bg-danger/5'
-                        : 'border-warning/50 bg-warning/5'
-                    }`}
-                  >
-                    <Server className="w-6 h-6" style={{
-                      color: node.status === 'Ready' ? '#2ed573' : node.status === 'NotReady' ? '#ff4757' : '#ffa502',
-                    }} />
-                    <span className="text-xs font-mono text-gray-300 truncate max-w-[80px] text-center">
-                      {node.name}
-                    </span>
-                    <span className={`text-[10px] font-mono ${
-                      node.status === 'Ready' ? 'text-success' : node.status === 'NotReady' ? 'text-danger' : 'text-warning'
-                    }`}>
-                      {node.status}
-                    </span>
-                  </div>
-                  {idx < metrics.nodes.length - 1 && (
-                    <div className="flex items-center">
-                      <div className="w-8 h-0.5 bg-dark-500" />
-                      <div className="w-2 h-2 border-2 border-dark-500 rotate-45 -ml-1" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">No topology data available</p>
-          )}
+      {/* Topology */}
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Topology</span>
         </div>
+        {metrics && metrics.nodes.length > 0 ? (
+          <div className="flex items-center justify-center py-8 gap-0">
+            {metrics.nodes.map((node, idx) => (
+              <div key={node.name} className="flex items-center">
+                <div className={`node-card min-w-[140px] ${node.status !== 'Ready' ? 'opacity-50' : ''}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`status-dot ${node.status === 'Ready' ? 'status-dot-online' : node.status === 'NotReady' ? 'status-dot-offline' : 'status-dot-unknown'}`} />
+                    <span className="node-name">{node.name}</span>
+                    <span className="text-[10px] font-mono text-ink-500 uppercase ml-auto">{node.role}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                    <div><span className="node-stat-label">CPU</span><p className="node-stat">{node.cpu_usage.toFixed(1)}%</p></div>
+                    <div><span className="node-stat-label">Mem</span><p className="node-stat">{node.memory_usage.toFixed(1)}%</p></div>
+                    <div><span className="node-stat-label">Pods</span><p className="node-stat">{node.pod_count}</p></div>
+                    <div><span className="node-stat-label">Restarts</span><p className="node-stat">{node.restart_count}</p></div>
+                  </div>
+                </div>
+                {idx < metrics.nodes.length - 1 && (
+                  <div className="w-10 flex items-center justify-center">
+                    <div className="w-full h-px bg-border" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state py-12">
+            <pre className="empty-state-icon">{'[ no topology ]'}</pre>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function NodeCard({ node }: { node: ClusterNode }) {
-  const isReady = node.status === 'Ready';
-  const isNotReady = node.status === 'NotReady';
-
+function MetricCell({ value, label, valueClass }: { value: string | number; label: string; valueClass?: string }) {
   return (
-    <div className={`p-4 rounded-lg border transition-all ${
-      isReady
-        ? 'bg-success/5 border-success/20'
-        : isNotReady
-        ? 'bg-danger/5 border-danger/20'
-        : 'bg-warning/5 border-warning/20'
-    }`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          {isReady ? (
-            <CheckCircle className="w-5 h-5 text-success" />
-          ) : isNotReady ? (
-            <XCircle className="w-5 h-5 text-danger" />
-          ) : (
-            <AlertTriangle className="w-5 h-5 text-warning" />
-          )}
-          <div>
-            <h4 className="font-medium text-gray-200">{node.name}</h4>
-            <p className="text-xs text-gray-500 font-mono">{node.ip_address}</p>
-          </div>
+    <div className="metric-cell">
+      <span className={`metric-value ${valueClass || ''}`}>{value}</span>
+      <span className="metric-label">{label}</span>
+    </div>
+  );
+}
+
+function NodeRow({ node }: { node: ClusterNode }) {
+  const isReady = node.status === 'Ready';
+  return (
+    <div className="flex items-center justify-between py-3 px-1 hover:bg-surface-200/30 transition-colors">
+      <div className="flex items-center gap-3">
+        <span className={`status-dot ${isReady ? 'status-dot-online' : 'status-dot-offline'}`} />
+        <div>
+          <span className="text-sm text-ink">{node.name}</span>
+          <span className="text-[11px] font-mono text-ink-500 ml-3">{node.ip_address}</span>
         </div>
-        <span className={`badge ${
-          isReady ? 'badge-low' : isNotReady ? 'badge-critical' : 'badge-high'
-        }`}>
-          {node.status}
-        </span>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-        <div>
-          <p className="text-xs text-gray-500">Role</p>
-          <p className="text-sm font-mono text-gray-300">{node.role}</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500">CPU</p>
-          <p className="text-sm font-mono text-gray-300">{node.cpu_usage.toFixed(1)}%</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500">Memory</p>
-          <p className="text-sm font-mono text-gray-300">{node.memory_usage.toFixed(1)}%</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-500">Pods</p>
-          <p className="text-sm font-mono text-gray-300">{node.pod_count}</p>
-        </div>
+      <div className="flex items-center gap-6">
+        <span className="text-[11px] font-mono text-ink-500">{node.role}</span>
+        <span className={`text-[11px] font-mono ${isReady ? 'text-safe' : 'text-critical'}`}>{node.status}</span>
       </div>
     </div>
   );

@@ -1,47 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
-import {
-  BarChart3,
-  TrendingUp,
-  AlertTriangle,
-  RefreshCw,
-} from 'lucide-react';
 
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
+  CategoryScale, LinearScale, BarElement, ArcElement,
+  Title, Tooltip, Legend,
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
-const severityColors = ['#ff4757', '#ffa502', '#00d4ff', '#2ed573'];
-const categoryColors: Record<string, string> = {
-  fire: '#ff6b35',
-  medical: '#e63946',
-  flood: '#457b9d',
-  earthquake: '#6d597a',
-  infrastructure: '#b56576',
-  hazard: '#e56b6f',
-  other: '#6c757d',
+const severityColors = ['#c42b2b', '#a67c00', '#666666', '#2b7a42'];
+const categoryPalette = ['#666666', '#444444', '#555555', '#777777', '#5a5a5a', '#6b6b6b', '#808080'];
+
+const chartOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { labels: { color: '#9a9a9a', font: { size: 10, family: 'Inter' }, boxWidth: 10, padding: 12 } },
+  },
+  scales: {
+    x: { ticks: { color: '#666666', font: { size: 10 } }, grid: { color: '#1e1e1e' } },
+    y: { ticks: { color: '#666666', font: { size: 10 } }, grid: { color: '#1e1e1e' } },
+  },
 };
 
 export function Statistics() {
@@ -52,133 +33,75 @@ export function Statistics() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = useCallback(async () => {
+  const fetch = useCallback(async () => {
     try {
-      const data = await apiService.getDashboard();
+      const d = await apiService.getDashboard();
       setStats({
-        incidents_by_severity: data.incidents_by_severity,
-        incidents_by_category: data.incidents_by_category,
-        total_incidents: data.total_incidents,
+        incidents_by_severity: d.incidents_by_severity,
+        incidents_by_category: d.incidents_by_category,
+        total_incidents: d.total_incidents,
       });
-    } catch { /* ignore */ }
+    } catch { /* */ }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => {
-    fetchStats();
-    const interval = setInterval(fetchStats, 15000);
-    return () => clearInterval(interval);
-  }, [fetchStats]);
+  useEffect(() => { fetch(); const i = setInterval(fetch, 15000); return () => clearInterval(i); }, [fetch]);
 
-  const severityChart = stats ? {
-    labels: ['P1 - Critical', 'P2 - High', 'P3 - Medium', 'P4 - Low'],
+  const severityData = stats ? {
+    labels: ['P1 Critical', 'P2 High', 'P3 Medium', 'P4 Low'],
     datasets: [{
       label: 'Incidents',
       data: ['P1', 'P2', 'P3', 'P4'].map((s) => stats.incidents_by_severity[s] || 0),
       backgroundColor: severityColors.map((c) => c + '80'),
       borderColor: severityColors,
-      borderWidth: 2,
+      borderWidth: 1,
+      borderRadius: 0,
     }],
   } : null;
 
-  const categoryChart = stats ? {
-    labels: Object.keys(stats.incidents_by_category).map(
-      (k) => k.charAt(0).toUpperCase() + k.slice(1)
-    ),
+  const categoryData = stats && Object.keys(stats.incidents_by_category).length > 0 ? {
+    labels: Object.keys(stats.incidents_by_category).map((k) => k.charAt(0).toUpperCase() + k.slice(1)),
     datasets: [{
       data: Object.values(stats.incidents_by_category),
-      backgroundColor: Object.keys(stats.incidents_by_category).map(
-        (k) => (categoryColors[k] || '#6c757d') + '80'
-      ),
-      borderColor: Object.keys(stats.incidents_by_category).map(
-        (k) => categoryColors[k] || '#6c757d'
-      ),
-      borderWidth: 2,
+      backgroundColor: categoryPalette.slice(0, Object.keys(stats.incidents_by_category).length).map((c) => c + '80'),
+      borderColor: categoryPalette,
+      borderWidth: 1,
     }],
   } : null;
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: { color: '#a0a0a0', font: { size: 11 } },
-      },
-    },
-    scales: {
-      x: { ticks: { color: '#606060' }, grid: { color: '#1a1a1a' } },
-      y: { ticks: { color: '#606060' }, grid: { color: '#1a1a1a' } },
-    },
-  };
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">Statistics</h1>
-          <p className="text-sm text-gray-500 mt-1">Analytics and incident trends</p>
-        </div>
-        <button onClick={fetchStats} className="btn-secondary flex items-center gap-2 text-sm" disabled={loading}>
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+    <div className="page">
+      <div className="page-header">
+        <h1 className="page-title">Analytics</h1>
+        <p className="page-subtitle">Incident distribution and trends</p>
       </div>
 
       {loading ? (
-        <div className="text-center py-16">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="empty-state py-16">
+          <pre className="empty-state-icon">{'[ loading... ]'}</pre>
         </div>
       ) : !stats || stats.total_incidents === 0 ? (
-        <div className="text-center py-16">
-          <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-          <p className="text-gray-400 font-medium">No Data Available</p>
-          <p className="text-sm text-gray-500 mt-1">Statistics will appear once incidents are reported</p>
+        <div className="empty-state py-16">
+          <pre className="empty-state-icon">{'{ "data": [] }'}</pre>
+          <p className="empty-state-title">No data available</p>
+          <p className="empty-state-text">Charts populate once incidents are reported.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4">
-              Incidents by Severity
-            </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-border">
+          <div className="bg-surface-100 p-6">
+            <p className="section-title mb-5">By Severity</p>
             <div className="h-64">
-              {severityChart && <Bar data={severityChart} options={chartOptions} />}
+              {severityData && <Bar data={severityData} options={chartOpts} />}
             </div>
           </div>
-
-          <div className="card">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4">
-              Incidents by Category
-            </h3>
+          <div className="bg-surface-100 p-6">
+            <p className="section-title mb-5">By Category</p>
             <div className="h-64">
-              {categoryChart && <Pie data={categoryChart} options={chartOptions} />}
-            </div>
-          </div>
-
-          <div className="card lg:col-span-2">
-            <h3 className="text-sm font-semibold text-gray-300 mb-4">
-              Severity Distribution
-            </h3>
-            <div className="grid grid-cols-4 gap-4">
-              {['P1', 'P2', 'P3', 'P4'].map((sev, idx) => {
-                const count = stats.incidents_by_severity[sev] || 0;
-                const total = Object.values(stats.incidents_by_severity).reduce((a, b) => a + b, 0) || 1;
-                const pct = Math.round((count / total) * 100);
-                return (
-                  <div key={sev} className="text-center p-4 rounded-lg bg-dark-700/50">
-                    <p className="text-2xl font-bold font-mono" style={{ color: severityColors[idx] }}>
-                      {count}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">{sev}</p>
-                    <div className="w-full bg-dark-600 rounded-full h-1.5 mt-2">
-                      <div
-                        className="h-1.5 rounded-full"
-                        style={{ width: `${pct}%`, backgroundColor: severityColors[idx] }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">{pct}%</p>
-                  </div>
-                );
-              })}
+              {categoryData ? <Pie data={categoryData} options={chartOpts} /> : (
+                <div className="empty-state h-full">
+                  <pre className="empty-state-icon">{'{ }'}</pre>
+                </div>
+              )}
             </div>
           </div>
         </div>

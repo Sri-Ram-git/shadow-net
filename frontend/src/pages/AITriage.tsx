@@ -3,21 +3,8 @@ import { apiService } from '../services/api';
 import { wsService } from '../services/websocket';
 import { useLocation } from 'react-router-dom';
 import type { Incident, AITriage as AITriageType } from '../types';
-import {
-  Brain,
-  AlertTriangle,
-  RefreshCw,
-  Zap,
-  Clock,
-  MapPin,
-  Users,
-  Activity,
-  Loader2,
-} from 'lucide-react';
 
-const severityColors: Record<string, string> = {
-  P1: '#ff4757', P2: '#ffa502', P3: '#00d4ff', P4: '#2ed573',
-};
+const severityColors: Record<string, string> = { P1: '#c42b2b', P2: '#a67c00', P3: '#666666', P4: '#2b7a42' };
 
 export function AITriage() {
   const location = useLocation();
@@ -30,208 +17,162 @@ export function AITriage() {
   const [triaging, setTriaging] = useState(false);
 
   const fetchIncidents = useCallback(async () => {
-    try {
-      const data = await apiService.getIncidents();
-      setIncidents(data);
-    } catch { /* ignore */ }
+    try { setIncidents(await apiService.getIncidents()); }
+    catch { /* */ }
     finally { setLoading(false); }
   }, []);
 
   const fetchTriage = useCallback(async (id: string) => {
-    try {
-      const data = await apiService.getTriage(id);
-      setTriage(data);
-    } catch {
-      setTriage(null);
-    }
+    try { setTriage(await apiService.getTriage(id)); }
+    catch { setTriage(null); }
   }, []);
 
   useEffect(() => {
     fetchIncidents();
-    const unsub = wsService.onMessage((msg) => {
-      if (msg.type === 'triage_update') fetchIncidents();
-    });
-    return () => unsub();
+    const u = wsService.onMessage((m) => { if (m.type === 'triage_update') fetchIncidents(); });
+    return () => u();
   }, [fetchIncidents]);
 
-  useEffect(() => {
-    if (selectedId) fetchTriage(selectedId);
-  }, [selectedId, fetchTriage]);
+  useEffect(() => { if (selectedId) fetchTriage(selectedId); }, [selectedId, fetchTriage]);
 
-  const handleRunTriage = async () => {
+  const handleRun = async () => {
     if (!selectedId) return;
     setTriaging(true);
-    try {
-      const result = await apiService.runTriage(selectedId);
-      setTriage(result);
-    } catch (err) {
-      console.error('Triage failed:', err);
-    } finally {
-      setTriaging(false);
-    }
+    try { setTriage(await apiService.runTriage(selectedId)); }
+    catch { /* */ }
+    finally { setTriaging(false); }
   };
 
-  const selectedIncident = incidents.find((i) => i.id === selectedId);
+  const selected = incidents.find((i) => i.id === selectedId);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold gradient-text">AI Triage</h1>
-        <p className="text-sm text-gray-500 mt-1">Automated emergency analysis with local LLM</p>
+    <div className="page">
+      <div className="page-header">
+        <h1 className="page-title">AI Triage</h1>
+        <p className="page-subtitle">Automated incident analysis — local LLM inference</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Incident List */}
-        <div className="card lg:col-span-1">
-          <h3 className="text-sm font-semibold text-gray-300 mb-3">Incidents</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-border">
+        {/* Incident list */}
+        <div className="bg-surface-100">
+          <div className="p-5 border-b border-border">
+            <p className="section-title">Incidents</p>
+          </div>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
-            </div>
+            <div className="p-6 text-center text-sm text-ink-500">Loading…</div>
           ) : incidents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No incidents</p>
+            <div className="empty-state py-12">
+              <pre className="empty-state-icon">{'{ }'}</pre>
+              <p className="empty-state-title">No incidents</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-              {incidents.map((incident) => (
+            <div className="divide-y divide-border-dark max-h-[600px] overflow-y-auto">
+              {incidents.map((inc) => (
                 <button
-                  key={incident.id}
-                  onClick={() => setSelectedId(incident.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-all ${
-                    selectedId === incident.id
-                      ? 'bg-accent/10 border border-accent/20'
-                      : 'bg-dark-700/50 border border-transparent hover:bg-dark-700'
+                  key={inc.id}
+                  onClick={() => setSelectedId(inc.id)}
+                  className={`w-full text-left px-5 py-3 transition-colors ${
+                    selectedId === inc.id ? 'bg-surface-200' : 'hover:bg-surface-200/50'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: severityColors[incident.severity] }}
-                    />
-                    <span className="text-sm font-medium text-gray-200 truncate">{incident.title}</span>
+                    <span className="w-[5px] h-[5px] shrink-0" style={{ backgroundColor: severityColors[inc.severity] || '#666' }} />
+                    <span className="text-sm text-ink truncate">{inc.title}</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                    <Clock className="w-3 h-3" />
-                    {new Date(incident.timestamp).toLocaleTimeString('en-US', { hour12: false })}
-                    {incident.status !== 'triaging' && (
-                      <span className="text-warning">Not triaged</span>
-                    )}
-                  </div>
+                  <p className="text-[11px] font-mono text-ink-500 mt-1 pl-[13px]">
+                    {new Date(inc.timestamp).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                    {inc.status !== 'triaging' && <span className="ml-2 text-warning">untriaged</span>}
+                  </p>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Triage Details */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Dossier */}
+        <div className="lg:col-span-2 bg-surface-100">
           {!selectedId ? (
-            <div className="card text-center py-16">
-              <Brain className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-              <p className="text-gray-400 font-medium">Select an Incident</p>
-              <p className="text-sm text-gray-500 mt-1">Choose an incident to run AI triage analysis</p>
+            <div className="empty-state py-20">
+              <pre className="empty-state-icon">{'[ select incident ]'}</pre>
+              <p className="empty-state-title">Choose an incident to analyse</p>
+              <p className="empty-state-text">Select from the list to view or run AI triage.</p>
             </div>
           ) : (
-            <>
-              {/* Incident Summary */}
-              {selectedIncident && (
-                <div className="card">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-200">{selectedIncident.title}</h3>
-                      <p className="text-sm text-gray-400 mt-1">{selectedIncident.description}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {selectedIncident.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {new Date(selectedIncident.timestamp).toLocaleString('en-US', { hour12: false })}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleRunTriage}
-                      disabled={triaging}
-                      className="btn-primary flex items-center gap-2 text-sm"
-                    >
-                      {triaging ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Zap className="w-4 h-4" />
-                      )}
-                      {triaging ? 'Analyzing...' : 'Run Triage'}
-                    </button>
-                  </div>
+            <div className="dossier min-h-[500px]">
+              <div className="dossier-header flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-[5px] h-[5px]" style={{ backgroundColor: severityColors[selected?.severity || 'P3'] }} />
+                  <span className="text-sm font-medium text-ink">{selected?.title || '—'}</span>
+                  {selected && (
+                    <span className="text-[11px] font-mono text-ink-500">{selected.location}</span>
+                  )}
                 </div>
-              )}
-
-              {/* AI Analysis Results */}
-              {triaging ? (
-                <div className="card text-center py-12">
-                  <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                  <p className="text-gray-300 font-medium">AI Analyzing Incident</p>
-                  <p className="text-sm text-gray-500 mt-1">Running local LLM inference via Ollama</p>
+                <div className="flex items-center gap-2">
+                  {triage && (
+                    <span className="text-[11px] font-mono text-ink-500">
+                      {new Date(triage.created_at).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
+                  <button onClick={handleRun} disabled={triaging} className="btn-primary btn-sm">
+                    {triaging ? 'Analysing…' : 'Run Analysis'}
+                  </button>
                 </div>
-              ) : triage ? (
-                <div className="card space-y-4 animate-fade-in">
-                  <div className="flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-accent" />
-                    <h3 className="font-semibold text-gray-200">AI Triage Results</h3>
-                  </div>
+              </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-dark-700/50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Severity</p>
-                      <p className="text-lg font-bold font-mono mt-1" style={{ color: severityColors[triage.severity] }}>
-                        {triage.severity}
-                      </p>
-                    </div>
-                    <div className="bg-dark-700/50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Department</p>
-                      <p className="text-sm font-medium text-gray-200 mt-1">{triage.department}</p>
-                    </div>
-                    <div className="bg-dark-700/50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Injured</p>
-                      <p className="text-lg font-bold font-mono mt-1 text-warning">{triage.injured}</p>
-                    </div>
-                    <div className="bg-dark-700/50 rounded-lg p-3">
-                      <p className="text-xs text-gray-500">Critical</p>
-                      <p className="text-lg font-bold font-mono mt-1 text-danger">{triage.critical}</p>
-                    </div>
+              <div className="dossier-body">
+                {triaging ? (
+                  <div className="empty-state py-12">
+                    <pre className="empty-state-icon">{'[ inference in progress... ]'}</pre>
+                    <p className="empty-state-title">Running local LLM</p>
+                    <p className="empty-state-text">Processing via Ollama — Phi-3-mini</p>
                   </div>
-
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-1">Location</p>
-                    <p className="text-sm text-gray-200 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                      {triage.location}
-                    </p>
+                ) : triage ? (
+                  <>
+                    <div className="grid grid-cols-4 gap-4">
+                      <Field label="Severity" value={triage.severity} valueStyle={{ color: severityColors[triage.severity] }} />
+                      <Field label="Department" value={triage.department} />
+                      <Field label="Injured" value={String(triage.injured)} />
+                      <Field label="Critical" value={String(triage.critical)} />
+                    </div>
+                    <div className="hr-text my-4">Assessment</div>
+                    <div className="dossier-field">
+                      <span className="dossier-label">Location</span>
+                      <span className="dossier-value">{triage.location}</span>
+                    </div>
+                    <div className="dossier-field">
+                      <span className="dossier-label">Summary</span>
+                      <span className="dossier-value">{triage.summary}</span>
+                    </div>
+                    {triage.raw_response && (
+                      <>
+                        <div className="hr-text my-4">Source</div>
+                        <pre className="bg-surface-200 p-4 text-[12px] font-mono text-ink-400 overflow-x-auto border border-border">
+                          {JSON.stringify(JSON.parse(triage.raw_response), null, 2)}
+                        </pre>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="empty-state py-12">
+                    <pre className="empty-state-icon">{'[ no analysis ]'}</pre>
+                    <p className="empty-state-title">Not yet analysed</p>
+                    <p className="empty-state-text">Run triage to generate an intelligence dossier.</p>
                   </div>
-
-                  <div className="bg-dark-700/50 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-1">Summary</p>
-                    <p className="text-sm text-gray-200">{triage.summary}</p>
-                  </div>
-
-                  <div className="text-xs text-gray-500 font-mono">
-                    Analyzed at: {new Date(triage.created_at).toLocaleString('en-US', { hour12: false })}
-                  </div>
-                </div>
-              ) : (
-                <div className="card text-center py-12">
-                  <Activity className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-                  <p className="text-gray-400 font-medium">No Analysis Yet</p>
-                  <p className="text-sm text-gray-500 mt-1">Click "Run Triage" to analyze with local AI</p>
-                </div>
-              )}
-            </>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Field({ label, value, valueStyle }: { label: string; value: string; valueStyle?: React.CSSProperties }) {
+  return (
+    <div className="bg-surface-200 border border-border p-4">
+      <p className="mono-label">{label}</p>
+      <p className="text-lg font-light text-ink mt-1" style={valueStyle}>{value}</p>
     </div>
   );
 }

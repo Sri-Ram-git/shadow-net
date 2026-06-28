@@ -1,60 +1,43 @@
 import { useLocation } from 'react-router-dom';
-import { Clock, WifiOff, Wifi } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-const pageTitles: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/incidents': 'Live Incidents',
-  '/incidents/create': 'Create Incident',
-  '/cluster': 'Cluster Health',
+const pageLabels: Record<string, string> = {
+  '/dashboard': 'Command Center',
+  '/incidents': 'Incidents',
+  '/incidents/create': 'Report Incident',
+  '/cluster': 'Cluster',
   '/triage': 'AI Triage',
-  '/sync': 'Sync Status',
-  '/statistics': 'Statistics',
+  '/sync': 'Sync',
+  '/statistics': 'Analytics',
   '/settings': 'Settings',
 };
 
 export function TopBar() {
   const location = useLocation();
   const [time, setTime] = useState(new Date());
-  const [online, setOnline] = useState(navigator.onLine);
-
-  const title = pageTitles[location.pathname] || 'ShadowNet';
+  const [online] = useState(navigator.onLine);
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+    const t = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
+  const label = pageLabels[location.pathname] || 'ShadowNet';
+
   return (
-    <header className="h-16 bg-dark-900/80 backdrop-blur-sm border-b border-dark-700 flex items-center justify-between px-6 shrink-0">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
-      </div>
+    <header className="h-14 bg-surface-50 border-b border-border flex items-center justify-between px-6 shrink-0">
+      <span className="text-sm font-medium text-ink-100">{label}</span>
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-sm">
-          {online ? (
-            <Wifi className="w-4 h-4 text-success" />
-          ) : (
-            <WifiOff className="w-4 h-4 text-warning" />
-          )}
-          <span className={online ? 'text-success' : 'text-warning'}>
-            {online ? 'Online' : 'Offline'}
+        <div className="flex items-center gap-2">
+          <span className={`status-dot ${online ? 'status-dot-online' : 'status-dot-offline'}`} />
+          <span className="text-[11px] font-mono text-ink-500 uppercase tracking-[0.06em]">
+            {online ? 'connected' : 'offline'}
           </span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <Clock className="w-4 h-4" />
-          <span className="font-mono">
-            {time.toLocaleTimeString('en-US', { hour12: false })}
-          </span>
-        </div>
+        <span className="text-[11px] font-mono text-ink-500">
+          {time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+        </span>
+        <span className="text-[11px] font-mono text-ink-500">UTC</span>
       </div>
     </header>
   );
