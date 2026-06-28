@@ -1,6 +1,5 @@
 import json
 import secrets
-import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any
 
@@ -127,6 +126,7 @@ class AuthService:
         log = LoginLog(
             user_id=user.id,
             ip_address=ip_address,
+            user_agent=user_agent,
             login_status="success",
             jwt_id=session.id,
         )
@@ -271,46 +271,6 @@ class AuthService:
         if user_id:
             return await self.audit_repo.get_by_user(user_id, limit)
         return await self.audit_repo.get_all(limit=limit)
-
-    async def forgot_password(self, email: str) -> str:
-        user = await self.user_repo.get_by_email(email)
-        if not user:
-            return "ok"
-        reset_token = str(uuid.uuid4()) + secrets.token_hex(32)
-        user.reset_token = reset_token
-        user.reset_token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
-        await self.user_repo.update(user)
-        await self.audit_repo.log(
-            action="user.forgot_password",
-            user_id=user.id,
-            resource="password",
-            resource_id=user.id,
-        )
-        return reset_token
-
-    async def reset_password(self, token: str, new_password: str) -> None:
-        user = await self.user_repo.get_by_reset_token(token)
-        if not user:
-            raise ValueError("Invalid or expired reset token")
-        expires = user.reset_token_expires_at
-        if expires and expires.tzinfo is None:
-            expires = expires.replace(tzinfo=timezone.utc)
-        if not expires or expires < datetime.now(timezone.utc):
-            raise ValueError("Reset token has expired")
-        valid, msg = validate_password_strength(new_password)
-        if not valid:
-            raise ValueError(msg)
-        user.password_hash = hash_password(new_password)
-        user.reset_token = None
-        user.reset_token_expires_at = None
-        await self.user_repo.update(user)
-        await self.session_repo.deactivate_all_for_user(user.id)
-        await self.audit_repo.log(
-            action="user.password_reset",
-            user_id=user.id,
-            resource="password",
-            resource_id=user.id,
-        )
 
     async def _log_failed_login(self, user_id: str | None, email: str, ip: str | None, reason: str) -> None:
         log = LoginLog(
