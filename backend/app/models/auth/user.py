@@ -28,5 +28,7 @@ class User(Base):
     status: Mapped[str] = Column(String(30), default=UserStatus.PENDING_VERIFICATION.value)
     email_verified: Mapped[bool] = Column(Boolean, default=False)
     last_login: Mapped[datetime | None] = Column(DateTime, nullable=True)
+    reset_token: Mapped[str | None] = Column(String(255), nullable=True)
+    reset_token_expires_at: Mapped[datetime | None] = Column(DateTime, nullable=True)
     created_at: Mapped[datetime] = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

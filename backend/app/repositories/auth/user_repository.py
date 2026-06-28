@@ -17,6 +17,12 @@ class UserRepository(BaseRepository):
         )
         return result.scalar_one_or_none()
 
+    async def get_by_reset_token(self, token: str) -> User | None:
+        result = await self._session.execute(
+            select(User).where(User.reset_token == token)
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_email(self, email: str) -> User | None:
         result = await self._session.execute(
             select(User).where(User.email == email.lower().strip())

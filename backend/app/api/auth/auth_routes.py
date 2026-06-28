@@ -46,6 +46,10 @@ async def register(
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -64,6 +68,9 @@ async def login(
         return result
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/logout")
@@ -93,7 +100,11 @@ async def forgot_password(
     req: ForgotPasswordRequest,
     service: AuthService = Depends(get_auth_service),
 ):
-    return {"message": "If the email exists, a reset link has been sent"}
+    token = await service.forgot_password(req.email)
+    return {
+        "message": "If the email exists, a reset link has been sent",
+        "reset_token": token if token != "ok" else None,
+    }
 
 
 @router.post("/reset-password")
@@ -101,4 +112,8 @@ async def reset_password(
     req: ResetPasswordRequest,
     service: AuthService = Depends(get_auth_service),
 ):
-    return {"message": "Password has been reset"}
+    try:
+        await service.reset_password(req.token, req.password)
+        return {"message": "Password has been reset"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
