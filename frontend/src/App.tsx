@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { wsService } from './services/websocket';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/auth/Login';
@@ -16,6 +18,11 @@ import { Settings } from './pages/Settings';
 import { Statistics } from './pages/Statistics';
 
 export function App() {
+  useEffect(() => {
+    wsService.connect();
+    return () => wsService.disconnect();
+  }, []);
+
   return (
     <Routes>
       {/* Public auth routes */}
