@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shadownet-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - shadownet-data:/app/data
+      - ./backend:/app/backend
+    environment:
+      - SHADOWNET_DATABASE_URL=sqlite+aiosqlite:////app/data/shadownet.db
+      - SHADOWNET_OLLAMA_ENDPOINT=http://ollama:11434
+      - SHADOWNET_CORS_ORIGINS=*
+      - SHADOWNET_DEBUG=true
+      - SHADOWNET_LOG_LEVEL=DEBUG
+    depends_on:
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - shadownet
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: shadownet-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - shadownet
+
+  frontend:
+    image: node:20-alpine
+    container_name: shadownet-frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - api
+    networks:
+      - shadownet
+
+volumes:
+  shadownet-data:
+  ollama-models:
+
+networks:
+  shadownet:
+    driver: bridge

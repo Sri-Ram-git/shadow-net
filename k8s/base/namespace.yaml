@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shadownet
+  labels:
+    app.kubernetes.io/name: shadownet
+    app.kubernetes.io/part-of: shadownet

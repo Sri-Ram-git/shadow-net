@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shadownet-config
+  namespace: shadownet
+data:
+  SHADOWNET_DATABASE_URL: "sqlite+aiosqlite:///data/shadownet.db"
+  SHADOWNET_OLLAMA_ENDPOINT: "http://ollama:11434"
+  SHADOWNET_OLLAMA_MODEL: "phi3:mini"
+  SHADOWNET_LOG_LEVEL: "INFO"
+  SHADOWNET_CORS_ORIGINS: "*"
+  SHADOWNET_SYNC_INTERVAL_SECONDS: "60"

@@ -1,0 +1,18 @@
+{
+  "name": "shadow-net",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chaos-Resilient Edge Infrastructure for Emergency Response",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "cd frontend && npm run build",
+    "test": "cd backend && poetry run pytest",
+    "lint": "cd frontend && npm run lint",
+    "typecheck": "cd frontend && npm run typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

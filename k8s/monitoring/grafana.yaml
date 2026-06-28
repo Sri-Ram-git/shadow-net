@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: shadownet
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: shadownet
+data:
+  shadownet-dashboard.json: |
+    {
+      "title": "ShadowNet Cluster Overview",
+      "tags": ["shadownet"],
+      "timezone": "browser",
+      "panels": [
+        {
+          "title": "Node CPU Usage",
+          "type": "gauge",
+          "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
+          "targets": [{"expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"}]
+        },
+        {
+          "title": "Memory Usage",
+          "type": "gauge",
+          "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
+          "targets": [{"expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)"}]
+        },
+        {
+          "title": "Pod Status",
+          "type": "stat",
+          "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
+          "targets": [{"expr": "count(kube_pod_status_phase{phase=\"Running\"})"}]
+        }
+      ]
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: shadownet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "shadownet"
+            - name: GF_INSTALL_PLUGINS
+              value: ""
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards
+              mountPath: /etc/grafana/provisioning/dashboards
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: shadownet
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: grafana

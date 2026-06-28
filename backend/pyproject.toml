@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "shadow-net-backend"
+version = "1.0.0"
+description = "ShadowNet Backend - Chaos-Resilient Edge Infrastructure"
+authors = ["ShadowNet Team"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.30.1"}
+sqlalchemy = "^2.0.31"
+aiosqlite = "^0.20.0"
+python-multipart = "^0.0.9"
+pydantic = "^2.8.2"
+pydantic-settings = "^2.3.4"
+httpx = "^0.27.0"
+python-dateutil = "^2.9.0"
+aiofiles = "^24.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.1"
+pytest-asyncio = "^0.23.8"
+httpx = "^0.27.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
