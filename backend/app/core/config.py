@@ -15,7 +15,15 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     cors_origins: str = "*"
     data_dir: str = "data"
-
+    jwt_secret: str = "shadownet-jwt-secret-change-in-production-2024"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "noreply@shadownet.local"
     class Config:
         env_file = ".env"
         env_prefix = "SHADOWNET_"
