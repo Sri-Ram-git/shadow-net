@@ -44,6 +44,8 @@ function mockResponse<T>(data: T): { data: T } {
 }
 
 function getBaseURL(): string {
+  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
+  if (envUrl) return envUrl;
   return '/api';
 }
 

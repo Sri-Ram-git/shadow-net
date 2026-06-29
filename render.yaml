@@ -10,7 +10,7 @@ services:
       - key: SHADOWNET_DEMO_MODE
         value: "true"
       - key: SHADOWNET_CORS_ORIGINS
-        value: "*"
+        value: "https://shadow-nett.vercel.app"
       - key: SHADOWNET_LOG_LEVEL
         value: "INFO"
       - key: SHADOWNET_DATABASE_URL
