@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: shadownet-api
+    env: docker
+    repo: https://github.com/Sri-Ram-git/shadow-net
+    branch: main
+    dockerfilePath: Dockerfile
+    healthCheckPath: /api/health/live
+    envVars:
+      - key: SHADOWNET_DEMO_MODE
+        value: "true"
+      - key: SHADOWNET_CORS_ORIGINS
+        value: "*"
+      - key: SHADOWNET_LOG_LEVEL
+        value: "INFO"
+      - key: SHADOWNET_DATABASE_URL
+        fromDatabase:
+          name: shadownet-db
+          property: connectionString
+
+databases:
+  - name: shadownet-db
+    plan: free
+    databaseType: postgresql
+    ipAllowList: []
