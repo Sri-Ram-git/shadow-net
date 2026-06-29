@@ -30,10 +30,8 @@ COPY --from=backend-deps /usr/local/bin /usr/local/bin
 COPY backend/ ./backend/
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
-RUN mkdir -p /app/data/uploads
-
 ENV PYTHONPATH=/app/backend
-ENV SHADOWNET_DATABASE_URL=sqlite+aiosqlite:////app/data/shadownet.db
+ENV SHADOWNET_DATABASE_URL=sqlite+aiosqlite:////data/shadownet.db
 ENV SHADOWNET_OLLAMA_ENDPOINT=http://ollama:11434
 ENV SHADOWNET_LOG_LEVEL=INFO
 ENV SHADOWNET_CORS_ORIGINS=*
@@ -41,6 +39,6 @@ ENV SHADOWNET_CORS_ORIGINS=*
 EXPOSE 8000
 
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 --start-period=10s \
-    CMD curl -f http://localhost:8000/api/health/live || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/api/health/live || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--proxy-headers"]
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2 --proxy-headers

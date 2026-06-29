@@ -92,11 +92,12 @@ async def seed_data():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing ShadowNet backend...")
+
     os.makedirs(settings.data_dir, exist_ok=True)
     os.makedirs(settings.upload_dir, exist_ok=True)
     await init_db()
     await seed_data()
-    logger.info("ShadowNet backend ready")
+    logger.info(f"ShadowNet backend ready — data: {settings.data_dir}, uploads: {settings.upload_dir}")
     yield
     logger.info("Shutting down ShadowNet backend...")
 
