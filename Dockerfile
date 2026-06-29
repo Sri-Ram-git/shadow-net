@@ -1,22 +1,5 @@
-# Multi-stage build for ShadowNet
-
-# Stage 1: Build frontend
-FROM node:20-alpine AS frontend-build
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
-COPY frontend/ .
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-RUN npm run build
-
-# Stage 2: Install backend dependencies
-FROM python:3.13-slim AS backend-deps
-WORKDIR /app
-COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Stage 3: Production image
 FROM python:3.13-slim
+
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,15 +8,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /data
 
-COPY --from=backend-deps /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
-COPY --from=backend-deps /usr/local/bin /usr/local/bin
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
-COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 ENV PYTHONPATH=/app/backend
 ENV SHADOWNET_DATABASE_URL=sqlite+aiosqlite:////data/shadownet.db
-ENV SHADOWNET_OLLAMA_ENDPOINT=http://ollama:11434
 ENV SHADOWNET_LOG_LEVEL=INFO
 ENV SHADOWNET_CORS_ORIGINS=*
 
