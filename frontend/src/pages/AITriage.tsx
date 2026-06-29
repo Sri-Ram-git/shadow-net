@@ -15,8 +15,13 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const DARK_TILES = 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png';
-const DARK_ATTR = '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>';
+const STADIA_KEY = import.meta.env.VITE_STADIA_KEY || '';
+const TILE_URL = STADIA_KEY
+  ? `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}`
+  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTR = STADIA_KEY
+  ? '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const severityColors: Record<string, string> = { P1: '#c42b2b', P2: '#a67c00', P3: '#5a7a9a', P4: '#4a7a5a' };
 const severityLabels: Record<string, string> = { P1: 'Critical', P2: 'High', P3: 'Moderate', P4: 'Low' };
@@ -185,7 +190,7 @@ function MapPreview({ location, title, incident }: { location: string; title: st
     <div>
       <div className="h-48 border border-border">
         <MapContainer center={center} zoom={14} className="h-full w-full" zoomControl={true} scrollWheelZoom={false}>
-          <TileLayer url={DARK_TILES} attribution={DARK_ATTR} />
+          <TileLayer url={TILE_URL} attribution={TILE_ATTR} />
           {hasCoords && <Marker position={center} />}
         </MapContainer>
       </div>

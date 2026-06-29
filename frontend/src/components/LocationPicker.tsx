@@ -31,8 +31,13 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const DARK_TILES = 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png';
-const DARK_ATTR = '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>';
+const STADIA_KEY = import.meta.env.VITE_STADIA_KEY || '';
+const TILE_URL = STADIA_KEY
+  ? `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${STADIA_KEY}`
+  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTR = STADIA_KEY
+  ? '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+  : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const DEFAULT_CENTER: [number, number] = [12.9716, 77.5946];
 
 async function nominatimSearch(q: string): Promise<Array<{ display_name: string; lat: string; lon: string }>> {
@@ -320,7 +325,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       {/* Map */}
       <div className="h-64 border border-border">
         <MapContainer center={center} zoom={13} className="h-full w-full" zoomControl={true}>
-          <TileLayer url={DARK_TILES} attribution={DARK_ATTR} />
+          <TileLayer url={TILE_URL} attribution={TILE_ATTR} />
           <ClickHandler onClick={handleMapClick} />
           {markerPos && (
             <>
