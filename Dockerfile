@@ -12,9 +12,8 @@ RUN npm run build
 # Stage 2: Install backend dependencies
 FROM python:3.13-slim AS backend-deps
 WORKDIR /app
-RUN pip install --no-cache-dir poetry
-COPY backend/pyproject.toml backend/poetry.lock ./
-RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 3: Production image
 FROM python:3.13-slim
@@ -23,7 +22,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /data
 
 COPY --from=backend-deps /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
 COPY --from=backend-deps /usr/local/bin /usr/local/bin
