@@ -13,12 +13,3 @@ services:
         value: "https://shadow-nett.vercel.app"
       - key: SHADOWNET_LOG_LEVEL
         value: "INFO"
-      - key: SHADOWNET_DATABASE_URL
-        fromDatabase:
-          name: shadownet-db
-          property: connectionString
-
-databases:
-  - name: shadownet-db
-    plan: free
-    ipAllowList: []
