@@ -36,9 +36,12 @@ async def get_db():
 
 async def init_db():
     from app.models import incident, ai_triage, sync_queue, audit_log, system_setting  # noqa
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables created successfully")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.warning(f"Database tables may already exist (race condition): {e}")
 
 
 async def check_db_health() -> bool:
