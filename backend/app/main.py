@@ -12,6 +12,7 @@ from app.repositories import IncidentRepository, TriageRepository, SyncRepositor
 from app.services.settings_service import DEFAULT_SETTINGS
 from app.models.incident import Incident
 from app.services.ollama_service import DEMO_RESPONSES
+from app.api import router
 import json
 
 

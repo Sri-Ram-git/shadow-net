@@ -2,11 +2,7 @@ import axios from 'axios';
 import type { Incident, AITriage, ClusterMetrics, DashboardStats, SyncQueueItem, CreateIncidentPayload } from '../types';
 
 function getBaseURL(): string {
-  const envUrl = import.meta.env.VITE_API_URL as string | undefined;
-  if (envUrl) return envUrl;
-  const protocol = typeof window !== 'undefined' ? window.location.protocol : 'http:';
-  const host = typeof window !== 'undefined' ? window.location.host : 'localhost:8001';
-  return `${protocol}//${host}/api`;
+  return '/api';
 }
 
 const api = axios.create({
