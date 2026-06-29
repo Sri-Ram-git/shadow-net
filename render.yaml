@@ -21,5 +21,4 @@ services:
 databases:
   - name: shadownet-db
     plan: free
-    databaseType: postgresql
     ipAllowList: []
