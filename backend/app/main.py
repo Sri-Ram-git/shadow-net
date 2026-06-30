@@ -3,7 +3,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, Response
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -133,12 +133,22 @@ async def security_headers(request: Request, call_next):
 
 API_PREFIX_PATHS = {"dashboard", "incidents", "cluster", "settings", "sync", "triage", "health", "config"}
 
+_CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Max-Age": "600",
+}
+
 @app.middleware("http")
 async def api_prefix_redirect(request: Request, call_next):
     path = request.url.path.lstrip("/")
     if not path.startswith("api/") and not path.startswith("uploads/") and not path.startswith("assets/"):
         first_segment = path.split("/")[0]
         if first_segment in API_PREFIX_PATHS:
+            if request.method == "OPTIONS":
+                return Response(status_code=200, headers=dict(_CORS_HEADERS))
             new_path = "/api/" + path
             return RedirectResponse(url=new_path, status_code=307)
     return await call_next(request)
