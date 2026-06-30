@@ -100,7 +100,7 @@ export function Dashboard() {
             <div className="empty-state py-16">
               <pre className="empty-state-icon">{'{  }'}</pre>
               <p className="empty-state-title">{getApiError() ? 'Backend unreachable' : 'No incidents recorded'}</p>
-              <p className="empty-state-text">{getApiError() ? 'Check that the backend is running at shadownet-api-production-e3d3.up.railway.app' : 'Reports will appear here as they are submitted.'}</p>
+              <p className="empty-state-text">{getApiError() ? 'Check that the backend is running at shadownet-api-production-bdf0.up.railway.app' : 'Reports will appear here as they are submitted.'}</p>
             </div>
           ) : (
             <div className="divide-y divide-border-dark">

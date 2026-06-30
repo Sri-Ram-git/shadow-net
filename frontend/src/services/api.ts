@@ -68,7 +68,7 @@ let _apiError: string | null = null;
 export function getApiError(): string | null { return _apiError; }
 export function clearApiError(): void { _apiError = null; }
 
-const DEFAULT_API_URL = 'https://shadownet-api-production-e3d3.up.railway.app/api';
+const DEFAULT_API_URL = 'https://shadownet-api-production-bdf0.up.railway.app/api';
 
 function getBaseURL(): string {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
