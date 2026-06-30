@@ -17,11 +17,10 @@ class WebSocketService {
       try { this.ws = new WebSocket(envWsUrl); this.isConnecting = false; return; } catch { /* fall through */ }
     }
     const envApiUrl = import.meta.env.VITE_API_URL as string | undefined;
-    if (envApiUrl) {
-      const base = envApiUrl.replace(/^http/, 'ws').replace(/\/+$/, '');
-      const apiSuffix = base.endsWith('/api') ? '' : '/api';
-      try { this.ws = new WebSocket(`${base}${apiSuffix}/ws`); this.isConnecting = false; return; } catch { /* fall through */ }
-    }
+    const apiUrl = envApiUrl || 'https://shadownet-api-production-e3d3.up.railway.app/api';
+    const base = apiUrl.replace(/^http/, 'ws').replace(/\/+$/, '');
+    const apiSuffix = base.endsWith('/api') ? '' : '/api';
+    try { this.ws = new WebSocket(`${base}${apiSuffix}/ws`); this.isConnecting = false; return; } catch { /* fall through */ }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const url = `${protocol}//${window.location.host}/api/ws`;
 
