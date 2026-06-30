@@ -4,28 +4,37 @@ import type { Incident, AITriage, ClusterMetrics, DashboardStats, SyncQueueItem,
 const now = new Date().toISOString();
 
 const SAMPLE_INCIDENTS: Incident[] = [
-  { id: '1', title: 'Wildfire near Bannerghatta Forest', description: 'Rapidly spreading wildfire in Bannerghatta forest area. Multiple fire crews dispatched.', location: 'Bannerghatta Forest Reserve, Bangalore, Karnataka', category: 'fire', severity: 'P1', status: 'triaging', latitude: 12.8, longitude: 77.58, city: 'Bangalore', state: 'Karnataka', country: 'India', timestamp: now, synced: true },
-  { id: '2', title: 'Major Road Accident on Hosur Road', description: 'Multi-vehicle collision involving a bus and two cars near Electronic City.', location: 'Hosur Road, Electronic City, Bangalore', category: 'medical,infrastructure', severity: 'P2', status: 'open', latitude: 12.845, longitude: 77.67, city: 'Bangalore', state: 'Karnataka', country: 'India', timestamp: now, synced: true },
-  { id: '3', title: 'Transformer Explosion in Whitefield', description: 'Electrical transformer explosion at Whitefield power substation. Power outage affecting 500 households.', location: 'Whitefield Power Substation, Bangalore', category: 'infrastructure,fire', severity: 'P3', status: 'open', latitude: 12.97, longitude: 77.75, city: 'Bangalore', state: 'Karnataka', country: 'India', timestamp: now, synced: true },
+  { id: '1', title: 'Wildfire near Bannerghatta Forest', description: 'Rapidly spreading wildfire in Bannerghatta forest area. Multiple fire crews dispatched.', location: 'Bannerghatta Forest Reserve, Bangalore, Karnataka', category: 'fire', severity: 'P1', status: 'triaging', latitude: 12.8, longitude: 77.58, city: 'Bangalore', state: 'Karnataka', country: 'India', postal_code: undefined, place_id: undefined, landmark: undefined, image_url: undefined, timestamp: now, synced: true },
+  { id: '2', title: 'Major Road Accident on Hosur Road', description: 'Multi-vehicle collision involving a bus and two cars near Electronic City.', location: 'Hosur Road, Electronic City, Bangalore', category: 'medical,infrastructure', severity: 'P2', status: 'open', latitude: 12.845, longitude: 77.67, city: 'Bangalore', state: 'Karnataka', country: 'India', postal_code: undefined, place_id: undefined, landmark: undefined, image_url: undefined, timestamp: now, synced: true },
+  { id: '3', title: 'Transformer Explosion in Whitefield', description: 'Electrical transformer explosion at Whitefield power substation. Power outage affecting 500 households.', location: 'Whitefield Power Substation, Bangalore', category: 'infrastructure,fire', severity: 'P3', status: 'open', latitude: 12.97, longitude: 77.75, city: 'Bangalore', state: 'Karnataka', country: 'India', postal_code: undefined, place_id: undefined, landmark: undefined, image_url: undefined, timestamp: now, synced: true },
 ];
 
 const DEMO_DATA = {
   health: { status: 'healthy', version: '2.4.1', uptime: 999 },
   dashboard: {
-    total_incidents: 3, open: 2, triaging: 1, resolved: 0,
-    p1: 1, p2: 1, p3: 1, p4: 0,
-    severity_breakdown: [{ severity: 'P1', count: 1 }, { severity: 'P2', count: 1 }, { severity: 'P3', count: 1 }],
-    recent: [
-      { title: 'Wildfire near Bannerghatta Forest', severity: 'P1', status: 'triaging', created_at: now, location: 'Bannerghatta Forest Reserve, Bangalore' },
-      { title: 'Major Road Accident on Hosur Road', severity: 'P2', status: 'open', created_at: now, location: 'Hosur Road, Electronic City' },
-      { title: 'Transformer Explosion in Whitefield', severity: 'P3', status: 'open', created_at: now, location: 'Whitefield Power Substation' },
-    ],
-    category_breakdown: [{ category: 'fire', count: 1 }, { category: 'medical', count: 1 }, { category: 'infrastructure', count: 1 }],
+    total_incidents: 3, critical_incidents: 1, available_nodes: 3, total_nodes: 3,
+    cluster_health: 100, storage_usage: 12.5, sync_pending: 0, sync_total: 0,
+    recent_incidents: SAMPLE_INCIDENTS,
+    incidents_by_severity: { P1: 1, P2: 1, P3: 1 },
+    incidents_by_category: { fire: 1, 'infrastructure,fire': 1, 'medical,infrastructure': 1 },
   },
   incidents: SAMPLE_INCIDENTS,
-  cluster: { nodes: 0, status: 'disconnected', uptime: 0, last_sync: null, error: 'Backend not deployed' },
+  cluster: {
+    nodes: [
+      { name: 'demo-control-1', role: 'control-plane', status: 'Ready', cpu_usage: 69, memory_usage: 73, pod_count: 8, restart_count: 0, ip_address: '10.0.0.1', os_image: 'Ubuntu 22.04 LTS', kubelet_version: 'v1.28.5', last_heartbeat: 'now' },
+      { name: 'demo-worker-1', role: 'worker', status: 'Ready', cpu_usage: 75, memory_usage: 57, pod_count: 12, restart_count: 0, ip_address: '10.0.0.2', os_image: 'Ubuntu 22.04 LTS', kubelet_version: 'v1.28.5', last_heartbeat: 'now' },
+      { name: 'demo-worker-2', role: 'worker', status: 'Ready', cpu_usage: 84, memory_usage: 67, pod_count: 10, restart_count: 0, ip_address: '10.0.0.3', os_image: 'Ubuntu 22.04 LTS', kubelet_version: 'v1.28.5', last_heartbeat: 'now' },
+    ],
+    total_pods: 30, healthy_pods: 30, total_cpu: 12, used_cpu: 9.1, total_memory: 24, used_memory: 15.8, network_health: 100,
+  },
   sync: [] as SyncQueueItem[],
-  settings: {} as Record<string, string>,
+  settings: {
+    ai_model: 'phi3:mini', ai_temperature: '0.3', ai_max_tokens: '2048',
+    heartbeat_interval: '1500', self_healing: 'true', pod_recovery: 'true',
+    replication_enabled: 'true', sync_mode: 'online', compression: 'true',
+    encryption: 'true', conflict_resolution: 'timestamp-win', log_level: 'info',
+    theme: 'dark',
+  },
   triage: (id: string): AITriage => ({
     id: 'demo-triage-1',
     incident_id: id,
@@ -55,6 +64,10 @@ const DEMO_DATA = {
   }),
 };
 
+let _apiError: string | null = null;
+export function getApiError(): string | null { return _apiError; }
+export function clearApiError(): void { _apiError = null; }
+
 function getBaseURL(): string {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (envUrl) {
@@ -78,11 +91,14 @@ api.interceptors.response.use(
   }
 );
 
-async function withFallback<T>(fn: () => Promise<{ data: T }>, fallback: T): Promise<T> {
+async function withFallback<T>(fn: () => Promise<{ data: T }>, fallback: T, label = ''): Promise<T> {
   try {
     const { data } = await fn();
+    _apiError = null;
     return data;
-  } catch {
+  } catch (err) {
+    console.warn('[ShadowNet] API' + (label ? ` ${label}` : '') + ' failed — using fallback', err);
+    _apiError = err instanceof Error ? err.message : 'Backend unreachable';
     return fallback;
   }
 }
@@ -144,9 +160,7 @@ export const apiService = {
       if (payload.place_id) formData.append('place_id', payload.place_id);
       if (payload.landmark) formData.append('landmark', payload.landmark);
       if (payload.image) formData.append('image', payload.image);
-      const { data } = await api.post('/incidents', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const { data } = await api.post('/incidents', formData);
       return data;
     } catch {
       return {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiService } from '../services/api';
+import { apiService, getApiError } from '../services/api';
 import { wsService } from '../services/websocket';
 import { MetricCell } from '../components/MetricCell';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -99,8 +99,8 @@ export function Dashboard() {
           {stats.recent_incidents.length === 0 ? (
             <div className="empty-state py-16">
               <pre className="empty-state-icon">{'{  }'}</pre>
-              <p className="empty-state-title">No incidents recorded</p>
-              <p className="empty-state-text">Reports will appear here as they are submitted.</p>
+              <p className="empty-state-title">{getApiError() ? 'Backend unreachable' : 'No incidents recorded'}</p>
+              <p className="empty-state-text">{getApiError() ? 'Check that the backend is running and VITE_API_URL is set correctly.' : 'Reports will appear here as they are submitted.'}</p>
             </div>
           ) : (
             <div className="divide-y divide-border-dark">

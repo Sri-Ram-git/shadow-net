@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiService } from '../services/api';
+import { apiService, getApiError } from '../services/api';
 import { wsService } from '../services/websocket';
 import { MetricCell } from '../components/MetricCell';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -77,7 +77,8 @@ export function ClusterHealth() {
         {(!metrics || metrics.nodes.length === 0) ? (
           <div className="empty-state py-12">
             <pre className="empty-state-icon">{'[ ]'}</pre>
-            <p className="empty-state-title">No nodes discovered</p>
+            <p className="empty-state-title">{getApiError() ? 'Backend unreachable' : 'No nodes discovered'}</p>
+            <p className="empty-state-text">{getApiError() ? 'Check that the backend is running and VITE_API_URL is set correctly.' : 'Nodes appear here once the cluster connects.'}</p>
           </div>
         ) : (
           <div className="divide-y divide-border-dark">
@@ -121,6 +122,7 @@ export function ClusterHealth() {
         ) : (
           <div className="empty-state py-12">
             <pre className="empty-state-icon">{'[ no topology ]'}</pre>
+            <p className="empty-state-title">{getApiError() ? 'Backend unreachable' : ''}</p>
           </div>
         )}
       </div>
