@@ -1,6 +1,14 @@
 import axios from 'axios';
 import type { Incident, AITriage, ClusterMetrics, DashboardStats, SyncQueueItem, CreateIncidentPayload } from '../types';
 
+const now = new Date().toISOString();
+
+const SAMPLE_INCIDENTS: Incident[] = [
+  { id: '1', title: 'Wildfire near Bannerghatta Forest', description: 'Rapidly spreading wildfire in Bannerghatta forest area. Multiple fire crews dispatched.', location: 'Bannerghatta Forest Reserve, Bangalore, Karnataka', category: 'fire', severity: 'P1', status: 'triaging', latitude: 12.8, longitude: 77.58, city: 'Bangalore', state: 'Karnataka', country: 'India', timestamp: now, synced: true },
+  { id: '2', title: 'Major Road Accident on Hosur Road', description: 'Multi-vehicle collision involving a bus and two cars near Electronic City.', location: 'Hosur Road, Electronic City, Bangalore', category: 'medical,infrastructure', severity: 'P2', status: 'open', latitude: 12.845, longitude: 77.67, city: 'Bangalore', state: 'Karnataka', country: 'India', timestamp: now, synced: true },
+  { id: '3', title: 'Transformer Explosion in Whitefield', description: 'Electrical transformer explosion at Whitefield power substation. Power outage affecting 500 households.', location: 'Whitefield Power Substation, Bangalore', category: 'infrastructure,fire', severity: 'P3', status: 'open', latitude: 12.97, longitude: 77.75, city: 'Bangalore', state: 'Karnataka', country: 'India', timestamp: now, synced: true },
+];
+
 const DEMO_DATA = {
   health: { status: 'healthy', version: '2.4.1', uptime: 999 },
   dashboard: {
@@ -8,40 +16,44 @@ const DEMO_DATA = {
     p1: 1, p2: 1, p3: 1, p4: 0,
     severity_breakdown: [{ severity: 'P1', count: 1 }, { severity: 'P2', count: 1 }, { severity: 'P3', count: 1 }],
     recent: [
-      { title: 'Wildfire near Bannerghatta Forest', severity: 'P1', status: 'triaging', created_at: new Date().toISOString(), location: 'Bannerghatta Forest Reserve, Bangalore' },
-      { title: 'Major Road Accident on Hosur Road', severity: 'P2', status: 'open', created_at: new Date().toISOString(), location: 'Hosur Road, Electronic City' },
-      { title: 'Transformer Explosion in Whitefield', severity: 'P3', status: 'open', created_at: new Date().toISOString(), location: 'Whitefield Power Substation' },
+      { title: 'Wildfire near Bannerghatta Forest', severity: 'P1', status: 'triaging', created_at: now, location: 'Bannerghatta Forest Reserve, Bangalore' },
+      { title: 'Major Road Accident on Hosur Road', severity: 'P2', status: 'open', created_at: now, location: 'Hosur Road, Electronic City' },
+      { title: 'Transformer Explosion in Whitefield', severity: 'P3', status: 'open', created_at: now, location: 'Whitefield Power Substation' },
     ],
     category_breakdown: [{ category: 'fire', count: 1 }, { category: 'medical', count: 1 }, { category: 'infrastructure', count: 1 }],
   },
-  incidents: [
-    { id: '1', title: 'Wildfire near Bannerghatta Forest', description: 'Rapidly spreading wildfire in Bannerghatta forest area. Multiple fire crews dispatched.', location: 'Bannerghatta Forest Reserve, Bangalore, Karnataka', category: 'fire', severity: 'P1', status: 'triaging', latitude: 12.8, longitude: 77.58, city: 'Bangalore', state: 'Karnataka', country: 'India', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: '2', title: 'Major Road Accident on Hosur Road', description: 'Multi-vehicle collision involving a bus and two cars near Electronic City.', location: 'Hosur Road, Electronic City, Bangalore', category: 'medical,infrastructure', severity: 'P2', status: 'open', latitude: 12.845, longitude: 77.67, city: 'Bangalore', state: 'Karnataka', country: 'India', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-    { id: '3', title: 'Transformer Explosion in Whitefield', description: 'Electrical transformer explosion at Whitefield power substation. Power outage affecting 500 households.', location: 'Whitefield Power Substation, Bangalore', category: 'infrastructure,fire', severity: 'P3', status: 'open', latitude: 12.97, longitude: 77.75, city: 'Bangalore', state: 'Karnataka', country: 'India', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  ] as Incident[],
+  incidents: SAMPLE_INCIDENTS,
   cluster: { nodes: 0, status: 'disconnected', uptime: 0, last_sync: null, error: 'Backend not deployed' },
   sync: [] as SyncQueueItem[],
   settings: {} as Record<string, string>,
   triage: (id: string): AITriage => ({
-    incident_id: id, status: 'completed',
+    id: 'demo-triage-1',
+    incident_id: id,
+    severity: 'P2',
+    department: 'Emergency Response',
+    injured: 0,
+    critical: 0,
+    location: 'Incident site',
     summary: 'Demo intelligence analysis for this incident.',
-    confirmed_facts: ['Incident reported via emergency channels', 'First responders en route to location'],
-    hazards: [{ hazard: 'Fire', risk_level: 'High', description: 'Active fire reported at scene', affected_area: '500m radius' }],
-    operational_recommendations: [{ priority: 'Immediate', action: 'Dispatch fire crews', responsible: 'Fire Department', resources_needed: ['Engine', 'Water tender'] }],
-    resource_requirements: [{ resource: 'Fire Engine', quantity: 3, priority: 'Critical', status: 'Available' }],
-    risk_assessment: { overall_risk: 'Medium', factors: [{ factor: 'Weather', impact: 'High', likelihood: 'Medium', mitigation: 'Monitor wind direction' }] },
-    reasoning_chain: [{ title: 'Initial Assessment', detail: 'Analyzing reported data', confidence: 0.85 }],
-    created_at: new Date().toISOString(),
+    raw_response: JSON.stringify({
+      incident_type: 'P2 Incident',
+      priority: 'Medium',
+      estimated_severity: 'P2',
+      confidence: 0.85,
+      source: 'demo',
+      executive_summary: 'Demo analysis for testing purposes.',
+      confirmed_facts: ['Incident reported via emergency channels', 'First responders en route to location'],
+      professional_assessment: ['Standard response protocol activated'],
+      hazard_analysis: [{ hazard: 'Fire', status: 'Medium', reason: 'Active fire reported' }],
+      risk_analysis: [{ risk: 'Fire spread', percentage: 40, reason: 'Weather conditions favorable' }],
+      operational_recommendations: [{ priority: 1, action: 'Dispatch fire crews', reason: 'Immediate response needed' }],
+      resource_estimation: [{ resource: 'Fire Engine', estimated: 3, reason: 'Standard response' }],
+      escalation_forecast: { next_15_minutes: ['Monitor situation'], next_hour: ['Assess damage'], next_6_hours: ['Stand down if contained'] },
+      reasoning_tree: [{ detected: 'Fire reported', inference: 'Active fire incident', reason: 'Emergency call' }],
+    }),
+    created_at: now,
   }),
 };
-
-function isNetworkError(error: unknown): boolean {
-  return axios.isAxiosError(error) && !error.response;
-}
-
-function mockResponse<T>(data: T): { data: T } {
-  return { data };
-}
 
 function getBaseURL(): string {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
@@ -140,8 +152,8 @@ export const apiService = {
         latitude: payload.latitude, longitude: payload.longitude,
         city: payload.city, state: payload.state, country: payload.country,
         postal_code: payload.postal_code, place_id: payload.place_id, landmark: payload.landmark,
-        created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      } as Incident;
+        timestamp: new Date().toISOString(), synced: false,
+      };
     }
   },
 

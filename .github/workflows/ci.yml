@@ -1,4 +1,4 @@
-name: ShadowNet CI
+name: CI
 
 on:
   push:
@@ -6,49 +6,168 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  PYTHON_VERSION: "3.13"
+  NODE_VERSION: "20"
+
 jobs:
   frontend:
-    name: Frontend Build
+    name: Frontend (build + lint + typecheck)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: frontend/dist
+          retention-days: 1
 
   backend:
-    name: Backend Build
+    name: Backend (deps + test + validate)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install poetry
-      - run: poetry config virtualenvs.create false
-      - run: poetry install --no-interaction --no-ansi
-      - run: python -m py_compile app/main.py
-        name: Syntax check
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install pip dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pytest
+        run: python -m pytest -v
+
+      - name: Install Poetry
+        run: |
+          pip install pipx
+          pipx ensurepath
+          pipx install poetry
+
+      - name: Validate pyproject.toml via Poetry
+        run: poetry check
+
+      - name: Verify imports (all modules load)
+        run: python -c "import sys; sys.path.insert(0, '.'); from app.main import app; print(f'FastAPI app loaded: {app.title} v{app.version}')"
 
   docker:
-    name: Docker Build
+    name: Docker build validation
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t shadownet-api .
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: false
+          tags: shadownet-api:ci
+
+      - name: Verify Dockerfile structure
+        run: |
+          echo "=== Dockerfile check ==="
+          grep -q 'FROM python' Dockerfile || { echo "FAIL: no Python base image"; exit 1; }
+          grep -q 'EXPOSE' Dockerfile || { echo "FAIL: missing EXPOSE"; exit 1; }
+          grep -q 'uvicorn' Dockerfile || { echo "FAIL: missing uvicorn CMD"; exit 1; }
+          grep -q 'HEALTHCHECK' Dockerfile || { echo "FAIL: missing HEALTHCHECK"; exit 1; }
+          grep -q '/api/health/live' Dockerfile || { echo "FAIL: health endpoint not referenced"; exit 1; }
+          echo "Dockerfile validates OK"
+
+  validate-configs:
+    name: Validate project configs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate railway.toml
+        run: |
+          echo "=== railway.toml check ==="
+          grep -q 'builder = "dockerfile"' railway.toml || { echo "FAIL: builder != dockerfile"; exit 1; }
+          grep -q 'healthcheckPath' railway.toml || { echo "FAIL: missing healthcheckPath"; exit 1; }
+          grep -q '/api/health/live' railway.toml || { echo "FAIL: health endpoint mismatch"; exit 1; }
+          echo "railway.toml validates OK"
+
+      - name: Validate frontend package.json
+        run: |
+          cd frontend
+          node -e "
+            const pkg = require('./package.json');
+            const checks = [
+              ['build script', pkg.scripts?.build],
+              ['react dependency', pkg.dependencies?.react],
+              ['react-router-dom', pkg.dependencies?.['react-router-dom']],
+              ['vite devDep', pkg.devDependencies?.vite],
+              ['typescript devDep', pkg.devDependencies?.typescript],
+            ];
+            let ok = true;
+            for (const [name, val] of checks) {
+              if (!val) { console.error('FAIL: missing ' + name); ok = false; }
+              else console.log('OK: ' + name + ' = ' + val);
+            }
+            if (!ok) process.exit(1);
+          "
+
+      - name: Validate backend package metadata
+        run: |
+          cd backend
+          python -c "
+            import tomllib
+            with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+            poetry = data['tool']['poetry']
+            assert poetry['name'] == 'shadow-net-backend', 'name mismatch'
+            assert poetry['package-mode'] == False, 'package-mode must be false'
+            deps = poetry['dependencies']
+            for pkg in ['fastapi', 'uvicorn', 'sqlalchemy', 'pydantic']:
+              assert pkg in deps, f'missing dep: {pkg}'
+            print('pyproject.toml validates OK')
+          "
+
+      - name: Validate health endpoint exists in code
+        run: |
+          grep -q 'async def live_check' backend/app/api/health.py || { echo "FAIL: /live endpoint missing"; exit 1; }
+          grep -q 'liveness' backend/app/api/health.py || echo "INFO: liveness model referenced"
+          grep -q '/api/health/live' railway.toml || { echo "FAIL: railway healthcheckPath mismatch"; exit 1; }
+          grep -q '/api/health/live' Dockerfile || { echo "FAIL: Docker HEALTHCHECK mismatch"; exit 1; }
+          echo "Health endpoint validates OK"

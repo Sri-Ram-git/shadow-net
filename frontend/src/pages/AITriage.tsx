@@ -142,11 +142,9 @@ function ResourceCard({ item }: { item: ResourceItem }) {
 }
 
 const riskColors = ['#c42b2b', '#a67c00', '#5a7a9a', '#4a7a5a', '#7a4a5a', '#5a5a7a', '#7a6a4a', '#4a6a7a'];
-const riskBgColors = ['#1a0808', '#1a1400', '#0a141a', '#081a0e', '#1a0e14', '#0e0e1a', '#1a1408', '#08141a'];
 
 function RiskBarCard({ item, index }: { item: RiskItem; index: number }) {
   const color = riskColors[index % riskColors.length];
-  const bgColor = riskBgColors[index % riskBgColors.length];
   return (
     <div className="bg-surface-200 border border-border p-4">
       <div className="flex items-center justify-between mb-2">

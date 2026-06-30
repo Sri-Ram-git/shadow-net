@@ -116,7 +116,7 @@ function Section({ icon, title, defaultOpen = false, children, status }: { icon:
 
 export function Settings() {
   useDocumentTitle('System Control');
-  const { settings, get, getBool, set, setBatch, saveState, loading } = useSystemConfig();
+  const { get, getBool, set, saveState, loading } = useSystemConfig();
 
   const doAction = (label: string, ms = 600) => {
     toast.promise(new Promise((r) => setTimeout(r, ms)), { loading: `${label}…`, success: `${label} — done`, error: 'Failed' });

@@ -4,7 +4,7 @@ import { apiService } from '../services/api';
 import { wsService } from '../services/websocket';
 import { MetricCell } from '../components/MetricCell';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import type { DashboardStats, Incident } from '../types';
+import type { DashboardStats } from '../types';
 
 const defaultStats: DashboardStats = {
   total_incidents: 0, critical_incidents: 0, available_nodes: 0, total_nodes: 3,
@@ -37,8 +37,6 @@ export function Dashboard() {
     const u = wsService.onMessage((m) => { if (['incident_update','cluster_update','sync_update'].includes(m.type)) fetch(); });
     return () => { clearInterval(i); u(); };
   }, [fetch]);
-
-  const healthColor = stats.cluster_health >= 80 ? '#2b7a42' : stats.cluster_health >= 50 ? '#a67c00' : '#c42b2b';
 
   if (loading) {
     return (

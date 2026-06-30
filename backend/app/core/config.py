@@ -1,5 +1,5 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -19,9 +19,7 @@ class Settings(BaseSettings):
     demo_mode: bool = False
     secret_key: str = "shadownet-dev-key-change-in-production"
 
-    class Config:
-        env_file = ".env"
-        env_prefix = "SHADOWNET_"
+    model_config = SettingsConfigDict(env_file=".env", env_prefix="SHADOWNET_")
 
     def model_post_init(self, __context):
         # Database: check Railway's auto-provided DATABASE_URL first
