@@ -3,6 +3,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import RedirectResponse
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -129,6 +130,18 @@ async def security_headers(request: Request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Cache-Control"] = "no-store"
     return response
+
+API_PREFIX_PATHS = {"dashboard", "incidents", "cluster", "settings", "sync", "triage", "health", "config"}
+
+@app.middleware("http")
+async def api_prefix_redirect(request: Request, call_next):
+    path = request.url.path.lstrip("/")
+    if not path.startswith("api/") and not path.startswith("uploads/") and not path.startswith("assets/"):
+        first_segment = path.split("/")[0]
+        if first_segment in API_PREFIX_PATHS:
+            new_path = "/api/" + path
+            return RedirectResponse(url=new_path, status_code=307)
+    return await call_next(request)
 
 app.include_router(router)
 
